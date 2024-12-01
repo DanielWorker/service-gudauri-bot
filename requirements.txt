@@ -1,0 +1,11 @@
+python-dotenv~=1.0.1
+Telethon==1.37.0
+pydantic==2.8.1
+pydantic-settings==2.4.0
+SQLAlchemy==2.0.32
+psycopg2-binary==2.9.9
+alembic==1.13.3
+pytz==2024.2
+async-timeout==4.0.3
+APScheduler==3.10.4
+openai==1.55.3
