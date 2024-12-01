@@ -90,7 +90,7 @@ class LeadUser(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.user_id"))
-    language: Mapped[str] = mapped_column(String, nullable=True)
+    lang: Mapped[str] = mapped_column(String, nullable=True)
 
     user: Mapped["User"] = relationship(back_populates="lead", uselist=False)
 
