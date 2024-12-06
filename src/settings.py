@@ -25,8 +25,8 @@ if int(TEST_MODE):
     log_dir = '/Users/spoonsimons/PycharmProjects/service_gudauri_bot/logs'
     path_to_sessions = '/Users/spoonsimons/PycharmProjects/service_gudauri_bot/sessions/'
 else:
-    log_dir = '/home/service_gudauri_bot/logs'
-    path_to_sessions = '/home/service_gudauri_bot/sessions/'
+    log_dir = '/home/service-gudauri-bot/logs'
+    path_to_sessions = '/home/service-gudauri-bot/sessions/'
 
 
 logger = logging.getLogger("telegram")
