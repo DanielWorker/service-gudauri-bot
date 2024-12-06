@@ -239,6 +239,93 @@ def extract_mentor_booking_details(user_input):
     return json.loads(result)
 
 
+def extract_food_order_details(user_input):
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {
+                "role": "system",
+                "content": (
+                    "You are an assistant that processes food orders. The user will provide a product number, name, "
+                    "and optionally the quantity in their input. You need to return a JSON object containing two keys: "
+                    "'selected_items' and 'total_price'. "
+                    "1. 'selected_items' should be an array of objects, where each object has 'number' (item number) "
+                    "and 'quantity' (default is 1). "
+                    "2. 'total_price' should be the sum of the prices of all selected items. "
+                    "You should handle input in both English and Russian, account for typos, and match product names "
+                    "or numbers accurately. "
+                    "Example input: '1', '3', 'Syrniki 2 psc', 'Блинчики', 'Вок с курицей 2 шт', 'Burger 6', '1 Syrniki and 3 Borscht'. "
+                    "Menu: "
+                    "1. Syrniki with sour cream (3 pcs) — 10₾, "
+                    "2. Pancakes with sour cream (3 pcs) — 10₾, "
+                    "3. Rice-milk porridge + jam — 10₾, "
+                    "4. “FastTrack” Sandwich (2 pcs) — 5₾, "
+                    "5. Borscht soup (beef) — 10₾, "
+                    "6. “Junior” Burger (beef) — 15₾, "
+                    "7. “KurCheese” Burger — 20₾, "
+                    "8. “BeefCheese” Burger (beef) — 25₾, "
+                    "9. Spaghetti Carbonara — 15₾, "
+                    "10. Chicken Wok — 15₾, "
+                    "11. Vegetable Wok — 15₾, "
+                    "12. Rice Wok with beef — 20₾, "
+                    "13. Water 0.5 L — 2.5₾, "
+                    "14. Cola 0.5 L — 5₾, "
+                    "15. Quince juice 1 L — 10₾, "
+                    "16. 100% Grape juice 1 L — 15₾, "
+                    "17. Freshly squeezed apple juice 0.5 L — 20₾, "
+                    "18. Americano (350 ml) — 5₾, "
+                    "19. Cappuccino (350 ml) — 7.5₾, "
+                    "20. Latte (350 ml) — 10₾, "
+                    "21. Glace (350 ml) — 10₾"
+                )
+            },
+            {
+                "role": "user",
+                "content": user_input
+            }
+        ],
+        response_format={
+            "type": "json_schema",
+            "json_schema": {
+                "name": "order_details_schema",
+                "schema": {
+                    "type": "object",
+                    "properties": {
+                        "selected_items": {
+                            "description": "An array of selected items, each containing the item number and quantity.",
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "number": {
+                                        "description": "The product number as specified in the menu.",
+                                        "type": "integer"
+                                    },
+                                    "quantity": {
+                                        "description": "The quantity of the selected item. Defaults to 1 if not provided.",
+                                        "type": "integer"
+                                    }
+                                },
+                                "required": ["number", "quantity"]
+                            }
+                        },
+                        "total_price": {
+                            "description": "The total price of all selected items in the order. This can be a fractional value.",
+                            "type": "number"
+                        },
+                        **default_properties
+                    },
+                    "required": ["selected_items", "total_price"],
+                    "additionalProperties": False
+                }
+            }
+        }
+    )
+
+    result = response.choices[0].message.content
+    return json.loads(result)
+
+
 def analyze_answer_yes_no(text):
     response = client.chat.completions.create(
         model="gpt-4o-mini",
@@ -246,9 +333,9 @@ def analyze_answer_yes_no(text):
             {
                 "role": "system",
                 "content": (
-                    "You classify a response based on the user's input as 'yes', 'no', or 'none'. "
-                    "If the user response includes any affirmative words like 'yes', 'yeah', 'sure', 'ok', etc., return true. "
-                    "If the response includes any negative words like 'no', 'nope', 'nah', etc., return false. "
+                    "You classify a response based on the user's input as 'yes', 'confirm', 'no', or 'none'. "
+                    "If the user response includes any affirmative words like 'yes', 'yeah', 'confirm', 'sure', 'ok', etc., return true. "
+                    "If the response includes any negative words like 'no', 'nope', 'nah', 'cancel', 'again', 'заново', etc., return false. "
                     "If the response does not contain any of these, return null (none)."
                 )
             },
@@ -291,9 +378,10 @@ default_properties = {
     },
 }
 
-print(extract_rental_equipment_details("1. Мне нужен шлем, перчатки\n2. Куртка"))
 
 
+# print(extract_order_details("1, 2 и 19"))
+# print(extract_rental_equipment_details("1. Мне нужен шлем, перчатки\n2. Куртка"))
 # print(analyze_answer_yes_no("Чего"))
 # print(extract_booking_details('16 января, 14:00, лыжи, 1 взрослый'))
 # print(determine_service('1'))

@@ -28,7 +28,8 @@ class SessionManager:
         session_path = stg.path_to_sessions + session_name
         client = TelegramClient(session_path, stg.BOT_API_ID, stg.BOT_API_HASH)
 
-        if session_name == '+48572779167.session':
+        # if session_name == '+48572779167.session':
+        if session_name == '+995511227921.session':
             from src.user_bots.handlers import message_handler
             client.add_event_handler(message_handler)
 

@@ -26,9 +26,13 @@ class ConversationService(TGObject):
             # Hire instructor
             'hire_instructor_info_request': self.handle_hire_instructor_info_request,
             'hire_instructor_confirmation_request': self.hire_instructor_confirmation_request,
+            # Food & Coffee
+            'food_order_info_request': self.handle_food_order_info_request,
+            'food_order_confirmation_request': self.handle_food_order_confirmation_request,
         }
 
         if user.state in state_functions:
+            await self.event.client.send_read_acknowledge(self.user_id, self.event.message)
             return await state_functions[user.state]()
 
     async def handle_new_user(self):
@@ -62,7 +66,7 @@ class ConversationService(TGObject):
         service_handlers = {
             'rent_equipment': self.handle_rent_equipment_service,
             'instructor': self.handle_instructor_service,
-            '': self,
+            'food_coffee': self.handle_food_coffee_service,
         }
 
         if service not in service_handlers:
@@ -197,3 +201,61 @@ class ConversationService(TGObject):
         else:
             return await self.handle_rent_equipment_service()
 
+    async def handle_food_coffee_service(self):
+        self.users_repo.update_user(
+            self.user_id,
+            state='food_order_info_request'
+        )
+
+        user = self.users_repo.find_user(self.user_id)
+        lang = user.lead.lang
+        text = tmp.food_order_info_text(lang)
+        await self.respond(text)
+
+    async def handle_food_order_info_request(self):
+        user = self.users_repo.find_user(self.user_id)
+        lang = user.lead.lang
+
+        order_details = api.extract_food_order_details(self.text)
+        total_price = order_details.get('total_price')
+        selected_items = order_details.get('selected_items')
+
+        if order_details.get('is_request_canceled'):
+            return await self.all_services_menu()
+
+        if not selected_items:
+            return await self.respond(tmp.no_food_selected_error(lang))
+
+        self.users_repo.update_user(
+            self.user_id,
+            state_data=order_details
+        )
+
+        text = tmp.food_order_text(lang, selected_items, total_price)
+        self.users_repo.update_user(self.user_id, state='food_order_confirmation_request')
+        return await self.respond(text)
+
+    async def handle_food_order_confirmation_request(self):
+        user = self.users_repo.find_user(self.user_id)
+        response = api.analyze_answer_yes_no(self.text)
+        answer = response['answer']
+
+        if response['is_request_canceled']:
+            return await self.handle_food_coffee_service()
+
+        if answer:
+            selected_items = user.state_data.get('selected_items')
+            total_price = user.state_data.get('total_price')
+            food_order = self.users_repo.add_food_order(selected_items, total_price)
+
+            first_text = tmp.new_food_order_text(user, selected_items, total_price)
+            await stg.bot.send_message(stg.notification_box_chat_id, first_text)
+
+            second_text = tmp.food_order_confirmed_text(user.lead.lang, food_order.id)
+            await self.respond(second_text)
+
+            return await self.all_services_menu()
+        elif answer is None:
+            pass
+        else:
+            return await self.handle_rent_equipment_service()

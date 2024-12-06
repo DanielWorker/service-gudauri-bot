@@ -1,4 +1,4 @@
-from sqlalchemy import String, Integer, ForeignKey, JSON, BigInteger, UniqueConstraint
+from sqlalchemy import String, Integer, ForeignKey, JSON, BigInteger, UniqueConstraint, Float
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import datetime, time
@@ -104,4 +104,51 @@ class LeadUser(Base):
         return {
             "id": self.id,
             "user_id": self.user_id,
+        }
+
+
+class FoodOrder(Base):
+    __tablename__ = "food_orders"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    total_price: Mapped[float] = mapped_column(Float)
+
+    order_items: Mapped["FoodOrderItem"] = relationship(back_populates="order", cascade="all, delete-orphan")
+
+    def __str__(self):
+        return f"{self.__class__.__name__}(id={self.id}, total_price={self.total_price})"
+
+    def __repr__(self):
+        return str(self)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "total_price": self.total_price,
+            "created_at": self.created_at,
+        }
+
+
+class FoodOrderItem(Base):
+    __tablename__ = "food_order_items"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    order_id: Mapped[int] = mapped_column(Integer, ForeignKey("food_orders.id"))
+    product_number: Mapped[int] = mapped_column(Integer)
+    quantity: Mapped[int] = mapped_column(Integer)
+
+    order: Mapped["FoodOrder"] = relationship(back_populates="order_items", uselist=False)
+
+    def __str__(self):
+        return f"{self.__class__.__name__}(id={self.id}, order_id={self.order_id}, product_number={self.product_number}, quantity={self.quantity})"
+
+    def __repr__(self):
+        return str(self)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "order_id": self.order_id,
+            "product_number": self.product_number,
+            "quantity": self.quantity,
         }

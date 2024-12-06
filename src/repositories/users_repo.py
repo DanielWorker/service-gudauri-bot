@@ -2,7 +2,7 @@ from sqlalchemy import update
 from sqlalchemy.orm import selectinload
 
 import src.settings as stg
-from src.model.users import User, Bot, RootUser, LeadUser
+from src.model.users import User, Bot, RootUser, LeadUser, FoodOrder, FoodOrderItem
 
 
 class UsersRepository:
@@ -31,7 +31,7 @@ class UsersRepository:
     def update_user(self, user_id: int, **values):
         stmt = update(User).where(User.user_id == user_id).values(**values)
         self.session.execute(stmt)
-        self.session.commit()
+        self.commit()
 
     def add_root(self, user_id):
         root = RootUser(user_id=user_id)
@@ -87,6 +87,22 @@ class UsersRepository:
 
     def find_all_leads(self):
         return self.session.query(LeadUser).order_by(LeadUser.id.desc()).all()
+
+    def add_food_order(self, selected_items, total_price):
+        order = FoodOrder(total_price=total_price)
+        self.session.add(order)
+
+        for item in selected_items:
+            order_item = FoodOrderItem(
+                order_id=order.id,
+                product_number=item['number'],
+                quantity=item['quantity']
+            )
+            self.session.add(order_item)
+
+        self.commit()
+
+        return order
 
     def commit(self):
         try:
