@@ -52,6 +52,6 @@ dev_user_id = 365500138
 all_service_gudauri_user_id = 7197611297
 all_service_gudauri_username = '@AllServiceGudauri'
 
-notification_box_chat_id = -1001826495601
+notification_box_chat_id = -1002416931095  # -1001826495601
 
 
