@@ -15,6 +15,10 @@ async def message_handler(event):
     if not event.is_private:
         return
 
+    sender = await event.get_sender()
+    if sender.bot:
+        return
+
     try:
         with session_maker() as session:
             users_repo = UsersRepository(session)
