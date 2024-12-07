@@ -1,3 +1,4 @@
+from src.bot import utils
 from src.bot.objects import TGObject
 from src.user_bots.conversation import templates as tmp
 from src.api import openai_api as api
@@ -25,6 +26,7 @@ class ConversationService(TGObject):
             'rent_equipment_info_request': self.handle_rent_equipment_info_request,
             # Hire instructor
             'hire_instructor_info_request': self.handle_hire_instructor_info_request,
+            'hire_instructor_personal_info_request': self.hire_instructor_personal_info_request,
             'hire_instructor_confirmation_request': self.hire_instructor_confirmation_request,
             # Food & Coffee
             'food_order_info_request': self.handle_food_order_info_request,
@@ -152,10 +154,13 @@ class ConversationService(TGObject):
 
     async def handle_hire_instructor_info_request(self):
         user = self.users_repo.find_user(self.user_id)
+        lang = user.lead.lang
         details = api.extract_mentor_booking_details(self.text)
 
-        # if details['is_request_canceled']:  fixme
-        #     return await self.all_services_menu()
+        if details.get('is_request_canceled', False):
+            return await self.all_services_menu()
+
+        details.pop("is_request_canceled", None)
 
         for key, value in details.items():
             if value != 'None' and value:
@@ -166,15 +171,56 @@ class ConversationService(TGObject):
             state_data=user.state_data
         )
 
-        if 'None' in user.state_data.values():
-            return
-
-        self.users_repo.update_user(self.user_id, state='hire_instructor_confirmation_request')
-
         date_time = user.state_data.get('date_time')
         lesson_preference = user.state_data.get('lesson_preference')
         equipment = user.state_data.get('equipment')
-        text = tmp.instructor_booking_confirmation_text(user.lead.lang, date_time, lesson_preference, equipment)
+
+        if 'None' in user.state_data.values():
+            text = tmp.instructor_booking_error(lang, date_time, equipment, lesson_preference)
+            return await self.respond(text)
+
+        user.state_data.update({'name': 'None', 'phone_number': 'None', 'place': 'None'})
+        self.users_repo.update_user(self.user_id, state_data=user.state_data, state='hire_instructor_personal_info_request')
+
+        first_text = tmp.tracks_info_text(lang)
+        file_path = utils.get_path_to_asset('tracks.png')
+        await self.respond(first_text, file=file_path)
+
+        second_text = tmp.instructor_booking_user_data_request_text(lang)
+        return await self.respond(second_text)
+
+    async def hire_instructor_personal_info_request(self):
+        user = self.users_repo.find_user(self.user_id)
+        personal_info = api.extract_user_details(self.text)
+
+        if personal_info.get('is_request_canceled', False):
+            return await self.handle_instructor_service()
+
+        personal_info.pop("is_request_canceled", None)
+
+        for key, value in personal_info.items():
+            if value != 'None' and value:
+                user.state_data[key] = personal_info[key]
+
+        self.users_repo.update_user(
+            self.user_id,
+            state_data=user.state_data
+        )
+
+        name = user.state_data.get('name')
+        phone_number = user.state_data.get('phone_number')
+        place = user.state_data.get('place')
+        date_time = user.state_data.get('date_time')
+        lesson_preference = user.state_data.get('lesson_preference')
+        equipment = user.state_data.get('equipment')
+
+        if 'None' in user.state_data.values():
+            text = tmp.instructor_booking_user_data_request_error(user.lead.lang, name, phone_number, place)
+            return await self.respond(text)
+
+        self.users_repo.update_user(self.user_id, state='hire_instructor_confirmation_request')
+
+        text = tmp.instructor_booking_confirmation_text(user.lead.lang, date_time, equipment, lesson_preference, name, phone_number, place)
         return await self.respond(text)
 
     async def hire_instructor_confirmation_request(self):
@@ -189,7 +235,10 @@ class ConversationService(TGObject):
             date_time = user.state_data.get('date_time')
             lesson_preference = user.state_data.get('lesson_preference')
             equipment = user.state_data.get('equipment')
-            first_text = tmp.new_instructor_booking_text(user, date_time, lesson_preference, equipment)
+            name = user.state_data.get('name')
+            phone_number = user.state_data.get('phone_number')
+            place = user.state_data.get('place')
+            first_text = tmp.new_instructor_booking_text(user, date_time, lesson_preference, equipment, name, phone_number, place)
             await stg.bot.send_message(stg.notification_box_chat_id, first_text)
 
             second_text = tmp.instructor_booking_confirmed_text(user.lead.lang)
@@ -251,8 +300,9 @@ class ConversationService(TGObject):
             first_text = tmp.new_food_order_text(user, selected_items, total_price)
             await stg.bot.send_message(stg.notification_box_chat_id, first_text)
 
+            file_path = utils.get_path_to_asset('new_gudauri_map.png')
             second_text = tmp.food_order_confirmed_text(user.lead.lang, food_order.id)
-            await self.respond(second_text)
+            await self.respond(second_text, file=file_path)
 
             return await self.all_services_menu()
         elif answer is None:

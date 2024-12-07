@@ -37,5 +37,7 @@ async def run_bot():
         try:
             await bot.run_until_disconnected()
         except Exception as e:
+            if e == 'Cannot send requests while disconnected':
+                bot.start()
             stg.logger.error(f"Bot crashed: {e}")
             await asyncio.sleep(5)

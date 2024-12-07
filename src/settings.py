@@ -24,9 +24,11 @@ TEST_MODE = os.getenv("TEST_MODE")
 if int(TEST_MODE):
     log_dir = '/Users/spoonsimons/PycharmProjects/service_gudauri_bot/logs'
     path_to_sessions = '/Users/spoonsimons/PycharmProjects/service_gudauri_bot/sessions/'
+    path_to_assets = '/Users/spoonsimons/PycharmProjects/service_gudauri_bot/src/assets/'
 else:
     log_dir = '/home/service-gudauri-bot/logs'
     path_to_sessions = '/home/service-gudauri-bot/sessions/'
+    path_to_assets = '/home/service-gudauri-bot/assets/'
 
 
 logger = logging.getLogger("telegram")

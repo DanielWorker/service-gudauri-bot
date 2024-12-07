@@ -1,3 +1,6 @@
+import src.settings as stg
+
+
 async def execute_callback(callback, callback_functions):
     data = callback.split('/')
     callback_text = data[0]
@@ -12,3 +15,7 @@ async def execute_callback(callback, callback_functions):
 
 def get_user_mention(user_id, name):
     return f'[{name}](tg://user?id={user_id})'
+
+
+def get_path_to_asset(image_name):
+    return stg.path_to_assets + image_name
