@@ -28,7 +28,7 @@ if int(TEST_MODE):
 else:
     log_dir = '/home/service-gudauri-bot/logs'
     path_to_sessions = '/home/service-gudauri-bot/sessions/'
-    path_to_assets = '/home/service-gudauri-bot/assets/'
+    path_to_assets = '/home/service-gudauri-bot/src/assets/'
 
 
 logger = logging.getLogger("telegram")

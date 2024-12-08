@@ -29,7 +29,6 @@ def all_services_text(lang):
 11. 📹 Photo/Video  
 12. 🧹Cleaning           
 13. 🏠RentFlat
-14. 🎫Sell Ski-pass
 
 Ski-lift Open/Closed 🟢🔴 
 Road status 🟢🔴
@@ -50,7 +49,6 @@ Road status 🟢🔴
 11. 📹Фото & Видео  
 12. 🧹Уборка           
 13. 🏠Аренда Квартир
-14. 🎫Продам Ski-pass
 
 Статус подъемников 🟢🔴
 Статус авто дорог из-за снега 🟢🔴
@@ -101,9 +99,7 @@ def rent_equipment_info_text(lang):
 • Gloves: **10₾/day**
 • Protective shorts: **10₾/day**
 • Jacket: **20₾/day**
-• Pants: **20₾/day**
-
-We’ll be waiting for you!"""
+• Pants: **20₾/day**"""
     else:
         return """
 **🏂 Прокат @AllServiceGudauri**
@@ -124,9 +120,7 @@ We’ll be waiting for you!"""
 • Перчатки: **10₾/сутки**
 • Защитные шорты: **10₾/сутки**
 • Куртка: **20₾/сутки**
-• Штаны: **20₾/сутки**
-
-Будем ждать вас!"""
+• Штаны: **20₾/сутки**"""
 
 
 def rent_equipment_questions_text(lang):
@@ -281,54 +275,79 @@ For beginners and those looking to improve their skills.
 def hire_instructor_questions_text(lang):
     if lang == "english":
         return """
-1. What date and time should we book for you?
-2. What equipment will you use?
-3. Would you prefer a group lesson for adults or an individual lesson for a child?
+1. What dates should we book for you?
+2. What time should the lesson start?
+3. Skis or snowboard?
+4. How many people?
+5. Please specify the approximate age.
 
-**Examples:**
-1. January 8th, 10:10
-2. Skis
-3. 1 child
+**Examples (write in a column format):**
+January 8
+10:10
+Skis
+1 child
+10 years old
 
-1. January 4th, 12:30
-2. Snowboard
-3. 2 adults"""
+January 4
+12:30
+Snowboard
+2 adults
+25-50 years old"""
     else:
         return """
-1. На какие даты и время вас записать?
-2. Какой снаряд вы будете использовать?
-3. Сколько взрослых или индивидуально для ребенка?
+1. На какие даты вас записать?
+2. Время начала занятия?
+3. Лыжи или сноуборд?
+4. Сколько людей?
+5. Укажите примерный возраст.
 
-Примеры: 
-8 января, 10 10
+**Примеры (пишите в столбик):**
+8 января
+10 10
 Лыжи
 1 ребенок
+10 лет
 
-4 января, 12 30
+4 января
+12 30
 Сноуборд
-2 взрослых"""
+2 взр
+25-50 лет"""
 
 
-def instructor_booking_error(lang, date_time, equipment, lesson_preference):
-    if lang == 'english':
-        dt_prompt = 'What date and time should we book for you?'
-        e_prompt = 'What equipment will you use?'
-        lp_prompt = 'Would you prefer a group lesson for adults or an individual lesson for a child?'
-        error_text = "Oops! Something was filled in incorrectly, please try again:"
-    else:
-        dt_prompt = 'На какие даты и время вас записать?'
-        e_prompt = 'Какое снаряжение вы будете использовать?'
-        lp_prompt = 'Сколько взрослых или индивидуально для ребенка?'
-        error_text = "Ой! Похоже, что-то заполнено неверно. Пожалуйста, попробуйте снова:"
+def instructor_booking_error(lang, state_data):
+    texts = {
+        'english': {
+            'dates': 'What dates should we book for you?',
+            'time': 'What time should the lesson start?',
+            'equipment': 'Skis or snowboard?',
+            'participants': 'How many people?',
+            'age': 'Please specify the approximate age.',
+            'error_text': 'Oops! Something was filled in incorrectly, please try again:'
+        },
+        'russian': {
+            'dates': 'На какие даты вас записать?',
+            'time': 'Время начала занятия?',
+            'equipment': 'Лыжи или сноуборд?',
+            'participants': 'Сколько людей?',
+            'age': 'Укажите примерный возраст.',
+            'error_text': 'Ой! Похоже, что-то заполнено неверно. Пожалуйста, попробуйте снова:'
+        }
 
-    dt_text = date_time + ' ✅' if date_time != 'None' else dt_prompt
-    e_text = equipment + ' ✅' if equipment != 'None' else e_prompt
-    lp_text = lesson_preference + ' ✅' if lesson_preference != 'None' else lp_prompt
+    }
 
-    return (f"**{error_text}**\n\n"
-            f"1. {dt_text}\n"
-            f"2. {e_text}\n"
-            f"3. {lp_text}\n")
+    title = texts[lang]['error_text']
+    text = f'{title}\n\n'
+    n = 1
+    for key, value in state_data.items():
+        if key not in texts[lang]:
+            continue
+
+        key_text = value + ' ✅' if value != 'None' else texts[lang][key]
+        text += f'{n}. {key_text}\n'
+        n += 1
+
+    return text
 
 
 def tracks_info_text(lang):
@@ -401,70 +420,86 @@ def instructor_booking_user_data_request_text(lang):
     return text
 
 
-def instructor_booking_user_data_request_error(lang, name, phone_number, place):
-    if lang == 'english':
-        n_prompt = 'What is your name?'
-        pn_prompt = 'What is your phone number?'
-        p_prompt = 'Where do you live or where will you stay?'
-        error_text = "Oops! Something was filled in incorrectly, please try again:"
-    else:
-        n_prompt = 'Как вас зовут?'
-        pn_prompt = 'Какой у вас номер телефона?'
-        p_prompt = 'Где вы живете или будете жить?'
-        error_text = "Ой! Похоже, что-то заполнено неверно. Пожалуйста, попробуйте снова:"
+def instructor_booking_user_data_request_error(lang, state_data):
+    texts = {
+        'english': {
+            'name': 'What is your name?',
+            'phone_number': 'What is your phone number?',
+            'place': 'Where do you live or where will you stay?',
+            'error_text': 'Oops! Something was filled in incorrectly, please try again:'
+        },
+        'russian': {
+            'name': 'Как вас зовут?',
+            'phone_number': 'Какой у вас номер телефона?',
+            'place': 'Где вы живете или будете жить?',
+            'error_text': 'Ой! Похоже, что-то заполнено неверно. Пожалуйста, попробуйте снова:'
+        }
+    }
 
-    n_text = name + ' ✅' if name != 'None' else n_prompt
-    pn_text = phone_number + ' ✅' if phone_number != 'None' else pn_prompt
-    p_text = place + ' ✅' if place != 'None' else p_prompt
+    title = texts[lang]['error_text']
+    text = f"{title}\n\n"
+    n = 1
+    for key, value in state_data.items():
+        if key not in texts[lang]:
+            continue
 
-    return (f"**{error_text}**\n\n"
-            f"1. {n_text}\n"
-            f"2. {pn_text}\n"
-            f"3. {p_text}\n")
+        key_text = value + ' ✅' if value != 'None' else texts[lang][key]
+        text += f"{n}. {key_text}\n"
+        n += 1
+
+    return text
 
 
-def instructor_booking_confirmation_text(lang, date_time, equipment, lesson_preference, name, phone_number, place):
+def instructor_booking_confirmation_text(lang, dates, time, equipment, participants, age, name, phone_number, place):
     if lang == "english":
-        return (f"**Confirm your booking by replying with 'yes'/'ok'**\n"
-                f"After that, we will connect you with an instructor.\n"
-                f"To cancel the rental, type 'cancel'.\n\n"
-                f"1. {date_time}\n"
-                f"2. {equipment}\n"
-                f"3. {lesson_preference}\n"
-                f"4. {name}\n"
-                f"5. {phone_number}\n"
-                f"6. {place}\n")
+        return (
+            f"**Confirm your booking by replying with 'yes'/'ok'**\n"
+            f"After that, we will connect you with an instructor.\n"
+            f"To cancel the rental, type 'cancel'.\n\n"
+            f"📅 {dates} | {time}\n"
+            f"👥 {participants} | {age}\n"
+            f"🎿 {equipment}\n\n"
+            f"👤 {name}\n"
+            f"📞 {phone_number}\n"
+            f"📍 {place}\n"
+        )
     else:
-        return (f"**Подтвердите вашу запись, написав “да”/“ага”**\n"
-                f"После этого мы свяжем вас с инструктором\n"
-                f"Для отмены аренды напишите 'отмена'\n\n"
-                f"1. {date_time}\n"
-                f"2. {equipment}\n"
-                f"3. {lesson_preference}\n"
-                f"4. {name}\n"
-                f"5. {phone_number}\n"
-                f"6. {place}\n")
+        return (
+            f"**Подтвердите вашу запись, написав “да”/“ага”**\n"
+            f"После этого мы свяжем вас с инструктором\n"
+            f"Для отмены аренды напишите 'отмена'\n\n"
+            f"📅 {dates} | {time}\n"
+            f"👥 {participants} | {age}\n"
+            f"🎿 {equipment}\n\n"
+            f"👤 {name}\n"
+            f"📞 {phone_number}\n"
+            f"📍 {place}\n"
+        )
 
 
-def new_instructor_booking_text(user, date_time, lesson_preference, equipment, name, phone_number, place):
+def new_instructor_booking_text(user, dates, time, equipment, participants, age, name, phone_number, place):
     user_mention = utils.get_user_mention(user.user_id, user.full_name)
     username = f' | @{user.username}' if user.username else ''
 
-    return (f"🆕 Заявка на инструктора\n\n"
-            f"👤 {user_mention}{username}\n"
-            f"1. {date_time}\n"
-            f"2. {equipment}\n"
-            f"3. {lesson_preference}\n"
-            f"4. {name}\n"
-            f"5. {phone_number}\n"
-            f"6. {place}\n")
+    return (f"🆕 Заявка на инструктора\n"
+            f"👤 {user_mention}{username}\n\n"
+            f"📅 {dates} | {time}\n"
+            f"👥 {participants} | {age}\n"
+            f"🎿 {equipment}\n\n"
+            f"👤 {name}\n"
+            f"📞 {phone_number}\n"
+            f"📍 {place}\n")
 
 
 def instructor_booking_confirmed_text(lang):
     if lang == "english":
-        return "🎉 Your equipment booking has been confirmed!"
+        return ("🎉 Your booking is confirmed!\n\n"
+                "**Please pay in cash (₾/$)**\n"
+                "Your contact information has been shared with the instructor.")
     else:
-        return "🎉 Ваша бронирование снаряжения подтверждено!"
+        return ("🎉 Ваша запись подтверждена!\n\n"
+                "**Пожалуйста, оплатите наличными (₾/$)**\n"
+                "Ваш контакт передан инструктору")
 # ======== Hire Instructor ========
 
 
@@ -542,7 +577,7 @@ Make your choice using numbers or letters:
     return text
 
 
-def food_order_text(lang, selected_items, total_price):
+def food_order_text(lang, selected_items):
     if lang == 'english':
         title = '📝 Your order'
         payment_info = ('Please pay in cash in GEL or USD (₾/$).\n'
@@ -554,7 +589,7 @@ def food_order_text(lang, selected_items, total_price):
                         '**На данный момент доступен только самовывоз.**\n\n'
                         '**Подтвердите ваше бронирование, написав “да”/“ага”**')
 
-    order_text = get_order_text(selected_items, total_price, lang)
+    order_text = get_order_text(selected_items, lang)
     text = (f"**{title}:**\n"
             f"{order_text}\n\n"
             f"{payment_info}")
@@ -562,17 +597,16 @@ def food_order_text(lang, selected_items, total_price):
     return text
 
 
-def get_order_text(selected_items, total_price, lang='russian'):
-    unit = 'pcs' if lang == 'english' else 'шт'
+def get_order_text(selected_items, lang='russian'):
     total_text = 'Total' if lang == 'english' else 'Итого'
+    total_price = calculate_total_price(selected_items)
     text = ''
 
     n = 1
     for item in selected_items:
         number = item['number']
         quantity = item['quantity']
-        position_name = food_coffee_dict[lang][number]
-        # q_text = f"  x {quantity} ({unit})" if quantity > 1 else ""
+        position_name = food_coffee_dict[lang][number]['name']
 
         for _ in range(quantity):
             text += f'{n}. {position_name}\n'
@@ -581,6 +615,17 @@ def get_order_text(selected_items, total_price, lang='russian'):
     text += f"\n{total_text}: {total_price}₾"
 
     return text
+
+
+def calculate_total_price(selected_items):
+    total_price = float()
+
+    for item in selected_items:
+        quantity = item['quantity']
+        price = food_coffee_dict['russian'][item['number']]['price']
+        total_price += quantity * price
+
+    return total_price
 
 
 def food_order_confirmed_text(lang, order_num):
@@ -598,10 +643,10 @@ def food_order_confirmed_text(lang, order_num):
     return text
 
 
-def new_food_order_text(user, selected_items, total_price):
+def new_food_order_text(user, selected_items):
     user_mention = utils.get_user_mention(user.user_id, user.full_name)
     username = f' | @{user.username}' if user.username else ''
-    order_text = get_order_text(selected_items, total_price)
+    order_text = get_order_text(selected_items)
 
     return (f"🆕 Заявка на еду\n\n"
             f"👤 {user_mention}{username}\n"
@@ -614,6 +659,104 @@ def no_food_selected_error(lang):
     else:
         return "Ой! Вы еще не выбрали ни одно блюдо или кофе. Пожалуйста, выберите что-нибудь перед тем, как сделать заказ."
 # ======== Food & Coffee =======
+
+
+# ======== Massage =======
+def massage_service_info_text(lang):
+    if lang == "english":
+        text = """**💆 Massage**
+
+🕒 9:00 AM - 9:00 PM 🕒  
+**1.** Relaxing Massage  1hr/1.5hrs  99₾/138 GEL  
+**2.** Classic Massage   1hr/1.5hrs  110₾/150₾  
+**3.** Sports Massage    1hr/1.5hrs  120₾/169₾  
+**4.** Therapeutic Session 1.5hrs/2hrs 195₾/245₾  
+**5.** Balinese Massage  1hr/1.5hrs  120₾/169₾  
+**6.** Anti-cellulite Massage 1hr/1.5hrs 110₾/150₾  
+**7.** Head + Face Massage 1hr/1.5hrs 110₾/150₾
+
+Please choose the type of massage and its duration.
+
+**Example:**  
+Therapeutic 2hrs  
+Relaxing 1hr"""
+    else:
+        text = """**💆Массаж**
+
+🕒 9.00 - 21.00 🕒
+**1.** Расслабляющий  1ч/1.5ч  99/138 лари 
+**2.** Классический     1ч/1.5ч 110/150₾
+**3.** Спортивный       1ч/1.5ч 120/169₾
+**4.** Лечебный сеанс   1.5ч/2ч 195/245₾
+**5.** Балийский массаж 1ч/1.5ч 120/169₾
+**6.** Антицеллюлитный  1ч/1.5ч 110/150₾
+**7.** Голова + лицо    1ч/1.5ч 110/150₾
+
+Выберите, какой будет вид массажа и длительность 
+
+**Пример:**
+Лечебный 2 ч
+Расслабляющий 1"""
+
+    return text
+
+
+def massage_type_request_text(lang):
+    if lang == "english":
+        return ("What date and time would you like to book?\n\n"
+                "**Example:**\n"
+                "January 4th, 12:00\n"
+                "January 8th at 10:00")
+    else:
+        return ("На какую дату и время вас записать?\n\n"
+                "**Пример:**\n"
+                "4 января, 12 00\n"
+                "8 января в 10")
+
+
+def massage_booking_error(lang):
+    if lang == 'english':
+        return 'Oops! Something was filled in incorrectly, please try again'
+    else:
+        return 'Ой! Похоже, что-то заполнено неверно. Пожалуйста, попробуйте снова'
+
+
+def massage_booking_confirmation_request_text(lang, dates, time, massage_type, duration):
+    if lang == "english":
+        return (f"**Confirm your booking by replying 'yes'/'ok'**\n"
+                f"After that, we will connect you with an operator\n"
+                "To cancel your booking, type 'cancel'.\n\n"
+                f"📅 {dates} {time}\n"
+                f"💆 {massage_type} {duration}")
+    else:
+        return (f"**Подтвердите вашу запись, написав “да”/“ага”**\n"
+                f"После этого мы свяжем вас с оператором\n"
+                "Для отмены записи напишите 'отмена'.\n\n"
+                f"📅 {dates} {time}\n"
+                f"💆 {massage_type} {duration}")
+
+
+def massage_booking_confirmed_text(lang):
+    if lang == "english":
+        return (f"**🎉 Your booking is confirmed!**\n"
+                f"📍 Come to Loft 2, any entrance to the elevator, 2nd floor, #228\n"
+                f"Please pay in cash (₾/$)")
+    else:
+        return (f"**🎉 Ваша запись подтверждена!**\n"
+                f"📍 Приходите Loft 2, любой вход к лифту, 2 этаж, №228\n"
+                f"Пожалуйста, оплатите наличными (₾/$)")
+
+
+def massage_booking_text(user, dates, time, massage_type, duration):
+    user_mention = utils.get_user_mention(user.user_id, user.full_name)
+    username = f' | @{user.username}' if user.username else ''
+
+    return (f"🆕 Заявка на массаж\n\n"
+            f"👤 {user_mention}{username}\n"
+            f"📅 {dates} {time}\n"
+            f"💆 {massage_type} {duration}")
+# ======== Massage =======
+
 
 # ======== Templates ========
 def service_unavailable_error(lang):
@@ -647,50 +790,50 @@ SERVICES = {
 
 food_coffee_dict = {
     "english": {
-        1: "Syrniki with sour cream (3 pcs) — **10₾**",
-        2: "Pancakes with sour cream (3 pcs) — **10₾**",
-        3: "Rice-milk porridge + jam — **10₾**",
-        4: "“FastTrack” Sandwich (2 pcs) — **5₾**",
-        5: "Borscht soup (beef) — **10₾**",
-        6: "“Junior” Burger (beef) — **15₾**",
-        7: "“KurCheese” Burger — **20₾**",
-        8: "“BeefCheese” Burger (beef) — **25₾**",
-        9: "Spaghetti Carbonara — **15₾**",
-        10: "Chicken Wok — **15₾**",
-        11: "Vegetable Wok — **15₾**",
-        12: "Rice Wok with beef — **20₾**",
-        13: "Water 0.5 L — **2.5₾**",
-        14: "Cola 0.5 L — **5₾**",
-        15: "Quince juice 1 L — **10₾**",
-        16: "100% Grape juice 1 L — **15₾**",
-        17: "Freshly squeezed apple juice 0.5 L — **20₾**",
-        18: "Americano (350 ml) — **5₾**",
-        19: "Cappuccino (350 ml) — **7.5₾**",
-        20: "Latte (350 ml) — **10₾**",
-        21: "Glace (350 ml) — **10₾**",
+        1: {"name": "Syrniki with sour cream (3 pcs) — **10₾**", "price": 10},
+        2: {"name": "Pancakes with sour cream (3 pcs) — **10₾**", "price": 10},
+        3: {"name": "Rice-milk porridge + jam — **10₾**", "price": 10},
+        4: {"name": "“FastTrack” Sandwich (2 pcs) — **5₾**", "price": 5},
+        5: {"name": "Borscht soup (beef) — **10₾**", "price": 10},
+        6: {"name": "“Junior” Burger (beef) — **15₾**", "price": 15},
+        7: {"name": "“KurCheese” Burger — **20₾**", "price": 20},
+        8: {"name": "“BeefCheese” Burger (beef) — **25₾**", "price": 25},
+        9: {"name": "Spaghetti Carbonara — **15₾**", "price": 15},
+        10: {"name": "Chicken Wok — **15₾**", "price": 15},
+        11: {"name": "Vegetable Wok — **15₾**", "price": 15},
+        12: {"name": "Rice Wok with beef — **20₾**", "price": 20},
+        13: {"name": "Water 0.5 L — **2.5₾**", "price": 2.5},
+        14: {"name": "Cola 0.5 L — **5₾**", "price": 5},
+        15: {"name": "Quince juice 1 L — **10₾**", "price": 10},
+        16: {"name": "100% Grape juice 1 L — **15₾**", "price": 15},
+        17: {"name": "Freshly squeezed apple juice 0.5 L — **20₾**", "price": 20},
+        18: {"name": "Americano (350 ml) — **5₾**", "price": 5},
+        19: {"name": "Cappuccino (350 ml) — **7.5₾**", "price": 7.5},
+        20: {"name": "Latte (350 ml) — **10₾**", "price": 10},
+        21: {"name": "Glace (350 ml) — **10₾**", "price": 10},
     },
     "russian": {
-        1: "Сырники с сметаной (3 шт) — **10₾**",
-        2: "Блинчики с сметаной (3 шт) — **10₾**",
-        3: "Каша рисо-молочная + варенье — **10₾**",
-        4: "Сэндвич “ФастТрэк” (2 шт) — **5₾**",
-        5: "Суп борщ (говядина) — **10₾**",
-        6: "Бургер “Джуниор” (говяжий) — **15₾**",
-        7: "Бургер “КурЧиз” — **20₾**",
-        8: "Бургер “БифЧиз” (говяжий) — **25₾**",
-        9: "Спагетти Карбонара — **15₾**",
-        10: "Вок с курицей — **15₾**",
-        11: "Вок с овощами — **15₾**",
-        12: "Рис-вок с говядиной — **20₾**",
-        13: "Вода 0.5 л — **2.5₾**",
-        14: "Вода “Кола” 0.5 л — **5₾**",
-        15: "Сок айва 1 л — 10₾",
-        16: "Сок 100% виноград 1 л — **15₾**",
-        17: "Свежевыжатый сок яблоко 0.5 л — **20₾**",
-        18: "Американо (350 мл) — **5₾**",
-        19: "Капучино (350 мл) — **7.5₾**",
-        20: "Латте (350 мл) — **10₾**",
-        21: "Гляссе (350 мл) — **10₾**",
+        1: {"name": "Сырники с сметаной (3 шт) — **10₾**", "price": 10},
+        2: {"name": "Блинчики с сметаной (3 шт) — **10₾**", "price": 10},
+        3: {"name": "Каша рисо-молочная + варенье — **10₾**", "price": 10},
+        4: {"name": "Сэндвич “ФастТрэк” (2 шт) — **5₾**", "price": 5},
+        5: {"name": "Суп борщ (говядина) — **10₾**", "price": 10},
+        6: {"name": "Бургер “Джуниор” (говяжий) — **15₾**", "price": 15},
+        7: {"name": "Бургер “КурЧиз” — **20₾**", "price": 20},
+        8: {"name": "Бургер “БифЧиз” (говяжий) — **25₾**", "price": 25},
+        9: {"name": "Спагетти Карбонара — **15₾**", "price": 15},
+        10: {"name": "Вок с курицей — **15₾**", "price": 15},
+        11: {"name": "Вок с овощами — **15₾**", "price": 15},
+        12: {"name": "Рис-вок с говядиной — **20₾**", "price": 20},
+        13: {"name": "Вода 0.5 л — **2.5₾**", "price": 2.5},
+        14: {"name": "Вода “Кола” 0.5 л — **5₾**", "price": 5},
+        15: {"name": "Сок айва 1 л — 10₾", "price": 10},
+        16: {"name": "Сок 100% виноград 1 л — **15₾**", "price": 15},
+        17: {"name": "Свежевыжатый сок яблоко 0.5 л — **20₾**", "price": 20},
+        18: {"name": "Американо (350 мл) — **5₾**", "price": 5},
+        19: {"name": "Капучино (350 мл) — **7.5₾**", "price": 7.5},
+        20: {"name": "Латте (350 мл) — **10₾**", "price": 10},
+        21: {"name": "Гляссе (350 мл) — **10₾**", "price": 10},
     }
 
 }

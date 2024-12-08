@@ -186,25 +186,24 @@ def extract_mentor_booking_details(user_input):
             {
                 "role": "system",
                 "content": (
-                    "You are an assistant that extracts booking details from user input. "
-                    "The user must answer three questions about their booking: "
-                    "1. What date and time should we book for you? "
-                    "2. What equipment will you use? Only 'Snowboard' or 'Skis' (including Russian terms and typos) are acceptable answers. "
-                    "Return 'None' if the equipment is anything else. Return what the user wrote if the answer is fitting. "
-                    "3. Would you prefer a group lesson for adults or an individual lesson for a child? "
-                    "Acceptable answers are: 'lesson for adults', 'lesson for a child', '1 adult', '2 adults', '1 child', '2 children'. "
-                    "Return 'None' if the answer is unclear or does not match these options. "
-                    "You will analyze the input and return a JSON object with three keys: 'date_time', 'equipment', and 'lesson_preference'. "
-                    "Each key should contain the exact text that the user sent as a response. If any of the answers are missing or unclear, return 'None' for that key. "
-                    "The input may be in English or Russian and may contain typos."
-                    "Examples:"
-                    "1. January 8th, 10:10\n"
-                    "2. Skis\n"
-                    "3. 1 child\n"
-                    "January 4th, 12:30 "
-                    "Snowboard "
-                    "2 adults "
-                    "10 января лыжи 1 ребенок"
+                    "Ты помощник, который извлекает данные для бронирования инструктора. "
+                    "Пользователь отвечает на вопросы строго по столбикам в следующем порядке: "
+                    "1. На какие даты вас записать? "
+                    "2. Время начала занятия? "
+                    "3. Лыжи или сноуборд? "
+                    "4. Сколько людей? "
+                    "5. Укажите примерный возраст. "
+                    "Твоя задача: проанализировать текст и извлечь ответы на каждый из вопросов. "
+                    "Верни JSON-объект с ключами: 'dates', 'time', 'equipment', 'participants', 'age'. "
+                    "Примеры ввода: "
+                    "- 8 января\n10 10\nЛыжи\n1 ребенок\n10 лет "
+                    "- 4 января\n12 30\nСноуборд\n2 взр\n25-50 лет "
+                    "Примечания: "
+                    "1. 'dates' должен содержать текст даты или 'None', если даты нет. "
+                    "2. 'time' должен содержать время в формате HH MM, если оно указано, иначе 'None'. "
+                    "3. 'equipment' должен быть 'Лыжи' или 'Сноуборд', иначе 'None'. "
+                    "4. 'participants' содержит информацию о количестве людей, например, '1 ребенок' или '2 взрослых' или '1 взр'. Если не указано, то 'None'. "
+                    "5. 'age' содержит возраст участников, например, '10 лет' или диапазон '25-50 лет'. Если возраст не указан, то 'None'."
                 )
             },
             {
@@ -219,22 +218,29 @@ def extract_mentor_booking_details(user_input):
                 "schema": {
                     "type": "object",
                     "properties": {
-                        "date_time": {
-                            "description": "The exact date and time for the booking, or 'None' if not provided.",
+                        "dates": {
+                            "description": "Текст даты или 'None', если дата не указана.",
+                            "type": ["string", "null"]
+                        },
+                        "time": {
+                            "description": "Время в формате HH MM или 'None', если не указано.",
                             "type": ["string", "null"]
                         },
                         "equipment": {
-                            "description": "The exact equipment to be used ('Snowboard' or 'Skis' only), or 'None' if not provided or invalid.",
+                            "description": "Точное оборудование: 'Лыжи' или 'Сноуборд', иначе 'None'.",
                             "type": ["string", "null"]
                         },
-                        "lesson_preference": {
-                            "description": "The exact lesson preference ('lesson for adults', 'lesson for a child', '1 adult', "
-                                           "'2 adults', '1 child', '2 children' only), or 'None' if not provided or invalid.",
+                        "participants": {
+                            "description": "Количество людей, например, '1 ребенок' или '2 взр', или 'None', если не указано.",
+                            "type": ["string", "null"]
+                        },
+                        "age": {
+                            "description": "Возраст или диапазон возраста, например, '10 лет' или '25-50 лет', или 'None', если не указано.",
                             "type": ["string", "null"]
                         },
                         **default_properties
                     },
-                    "required": ["date_time", "equipment", "lesson_preference"],
+                    "required": ["dates", "time", "equipment", "participants", "age"],
                     "additionalProperties": False
                 }
             }
@@ -251,7 +257,7 @@ def extract_user_details(user_input):
 
     # Поиск телефона с помощью регулярного выражения
     match = re.search(phone_pattern, user_input)
-    phone_number = match.group(0) if match else 'None'
+    phone_number = match.group(0).strip() if match else 'None'
 
     response = client.chat.completions.create(
         model="gpt-4o-mini",
@@ -264,21 +270,20 @@ def extract_user_details(user_input):
                     "1. What is your name? "
                     "2. What is your phone number? "
                     "3. Where do you live or where will you stay? "
-                    "You should extract a valid name, a valid phone number, and a valid place in Georgia related to Gudauri. "
-                    # "The acceptable places are: 'New Gudauri', 'Upper Gudauri', 'Lower Gudauri', 'Club 2100', 'Gudauri Lodge', 'Hills', 'Roshka', 'Gogi', or any mention of 'Gudauri'. "
-                    "If the name is unclear or not valid (like only a single letter), return 'None'."
-                    "For phone numbers, return 'None' if it doesn't follow international format.  "
+                    "You should extract a valid name, a valid phone number, and accept any place mentioned by the user for the 'place' key. "
+                    "If the name is unclear or not valid (like only a single letter), return 'None'. "
+                    "For phone numbers, return 'None' if it doesn't follow international format. "
                     "If any of the answers are missing or unclear, return 'None' for that key. "
                     "You will return a JSON object with three keys: 'name', 'phone_number', and 'place'. "
-                    "Each key should contain the exact text that the user sent as a response if it matches the valid criteria. "
+                    "Each key should contain the exact text that the user sent as a response. "
                     "Examples: "
                     "1. John Doe "
                     "2. +995123456789 "
-                    "3. New Gudauri "
+                    "3. Tbilisi' "
                     "or "
                     "Иван Иванов "
                     "+995912345678 "
-                    "Рошка "
+                    "В Гудаури или рядом."
                     "or "
                     "Игорь, +995912345678, Hills "
                     "or "
@@ -302,11 +307,11 @@ def extract_user_details(user_input):
                             "type": ["string", "null"]
                         },
                         "phone_number": {
-                            "description": "The exact phone number provided by the user, or 'None' if not provided or invalid. The phone number should follow a valid international format. It could look like +1234567890",
+                            "description": "The exact phone number provided by the user, or 'None' if not provided or invalid. The phone number should follow a valid international format. It could look like +1234567890.",
                             "type": ["string", "null"]
                         },
                         "place": {
-                            "description": "The exact place where the user lives or will stay (must be a valid place related to Gudauri or Georgia, or any mention of 'Gudauri'), or 'None' if not provided or invalid.",
+                            "description": "The exact place where the user lives or will stay. Accept any user-provided text.",
                             "type": ["string", "null"]
                         },
                         **default_properties
@@ -333,15 +338,14 @@ def extract_food_order_details(user_input):
                 "role": "system",
                 "content": (
                     "You are an assistant that processes food orders. The user will provide a product number, name, "
-                    "and optionally the quantity in their input. You need to return a JSON object containing two keys: "
-                    "'selected_items' and 'total_price'. "
+                    "and optionally the quantity in their input. You need to return a JSON object containing one key: "
+                    "'selected_items'. "
                     "1. 'selected_items' should be an array of objects, where each object has 'number' (item number) "
                     "and 'quantity' (default is 1). "
-                    "2. 'total_price' should be the sum of the prices of all selected items. "
-                    "3. If a product number is repeated in the input, treat it as a separate instance with its own quantity. "
+                    "2. If a product number is repeated in the input, treat it as a separate instance with its own quantity. "
                     "Example: For the input '2 2 4 7', the output should be: "
-                    "{'selected_items': [{'number': 2, 'quantity': 2}, {'number': 4, 'quantity': 1}, {'number': 7, 'quantity': 1}], 'total_price': 45}. "
-                    "4. The input may include typos, and you should account for similar words (e.g., 'Syrniki', 'Блинчики'). "
+                    "{'selected_items': [{'number': 2, 'quantity': 2}, {'number': 4, 'quantity': 1}, {'number': 7, 'quantity': 1}]}. "
+                    "3. The input may include typos, and you should account for similar words (e.g., 'Syrniki', 'Блинчики'). "
                     "Analyze and match product names or numbers accurately. "
                     "You should handle input in both English and Russian, account for typos, and match product names "
                     "or numbers accurately. "
@@ -400,13 +404,9 @@ def extract_food_order_details(user_input):
                                 "required": ["number", "quantity"]
                             }
                         },
-                        "total_price": {
-                            "description": "The total price of all selected items in the order. This can be a fractional value.",
-                            "type": "number"
-                        },
                         **default_properties
                     },
-                    "required": ["selected_items", "total_price"],
+                    "required": ["selected_items"],
                     "additionalProperties": False
                 }
             }
@@ -458,6 +458,117 @@ def analyze_answer_yes_no(text):
     return json.loads(result)
 
 
+def extract_booking_details_for_massage(user_input):
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {
+                "role": "system",
+                "content": (
+                    "Ты помощник, который извлекает данные для бронирования массажа. "
+                    "Пользователь отвечает на вопросы строго по столбикам в следующем порядке: "
+                    "1. На какие даты вас записать? "
+                    "2. Время начала занятия? "
+                    "Твоя задача: проанализировать текст и извлечь ответы на каждый из вопросов. "
+                    "Верни JSON-объект с ключами: 'dates' и 'time'. "
+                    "Примеры ввода: "
+                    "- 8 января\n10 10 "
+                    "- 4 января\n12 30 "
+                    "- 4 января, 12 00 "
+                    "- 8 января в 10 "
+                    "Примечания: "
+                    "1. 'dates' должен содержать текст даты или 'None', если даты нет. "
+                    "2. 'time' должен содержать время в формате HH MM, если оно указано, иначе 'None'."
+                )
+            },
+            {
+                "role": "user",
+                "content": f"{user_input}"
+            }
+        ],
+        response_format={
+            "type": "json_schema",
+            "json_schema": {
+                "name": "get_booking_details",
+                "schema": {
+                    "type": "object",
+                    "properties": {
+                        "dates": {
+                            "description": "Текст даты или 'None', если дата не указана.",
+                            "type": ["string", "null"]
+                        },
+                        "time": {
+                            "description": "Время в формате HH MM или 'None', если не указано.",
+                            "type": ["string", "null"]
+                        },
+                        **default_properties
+                    },
+                    "required": ["dates", "time"],
+                    "additionalProperties": False
+                }
+            }
+        }
+    )
+
+    result = response.choices[0].message.content
+    return json.loads(result)
+
+
+def extract_massage_details(user_input):
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {
+                "role": "system",
+                "content": (
+                    "You are an assistant that extracts massage details from user input. "
+                    "The user can choose from the following types of massage: "
+                    "1. Расслабляющий 1ч/1.5ч 99/138 GEL "
+                    "2. Классический 1ч/1.5ч 110/150 GEL "
+                    "3. Спортивный 1ч/1.5ч 120/169 GEL "
+                    "4. Лечебный 1.5ч/2ч 195/245 GEL "
+                    "5. Балийский массаж 1ч/1.5ч 120/169 GEL "
+                    "6. Антицеллюлитный 1ч/1.5ч 110/150 GEL "
+                    "7. Голова + лицо 1ч/1.5ч 110/150 GEL "
+                    "You will analyze the input and return a JSON object with the keys 'massage_type' and 'duration'. "
+                    "The 'massage_type' should be one of the available types, or 'None' if it's not specified correctly. "
+                    "The 'duration' should be one of the available durations (1h or 1.5h or 2h), or 'None' if not specified. "
+                    "Example input: 'Лечебный 2ч' or 'Расслабляющий 1'."
+                )
+            },
+            {
+                "role": "user",
+                "content": f"{user_input}"
+            }
+        ],
+        response_format={
+            "type": "json_schema",
+            "json_schema": {
+                "name": "get_massage_details",
+                "schema": {
+                    "type": "object",
+                    "properties": {
+                        "massage_type": {
+                            "description": "The type of massage requested by the user, or 'None' if not provided correctly.",
+                            "type": ["string", "null"]
+                        },
+                        "duration": {
+                            "description": "The duration of the massage requested (1h or 1.5h or 2h), or 'None' if not provided.",
+                            "type": ["string", "null"]
+                        },
+                        **default_properties
+                    },
+                    "required": ["massage_type", "duration"],
+                    "additionalProperties": False
+                }
+            }
+        }
+    )
+
+    result = response.choices[0].message.content
+    return json.loads(result)
+
+
 default_properties = {
     "is_request_canceled": {
         "description": "True if the response contains a cancellation request, otherwise False.",
@@ -465,7 +576,8 @@ default_properties = {
     },
 }
 
-# print(extract_mentor_booking_details('2 взрослых 4 января 12.30 Сноуборд'))
+# print(extract_mentor_booking_details('2 взрослых 4 января 12.30 Сноуборд, 10-20 лет'))
+# print(extract_mentor_booking_details('8 января\n10 10\nЛыжи\n1 ребенок\n10 лет'))
 # print(extract_food_order_details('2 2 2 4 7'))
 # print(extract_mentor_booking_details('8 января, санки, 3 котика'))
 # print(extract_user_details('Даниил +48572779167'))

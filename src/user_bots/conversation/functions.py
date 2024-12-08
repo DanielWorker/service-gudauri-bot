@@ -31,6 +31,10 @@ class ConversationService(TGObject):
             # Food & Coffee
             'food_order_info_request': self.handle_food_order_info_request,
             'food_order_confirmation_request': self.handle_food_order_confirmation_request,
+            # Massage
+            'massage_date_info_request': self.handle_massage_date_info_request,
+            'massage_type_info_request': self.handle_massage_type_info_request,
+            'massage_booking_confirmation_request': self.handle_massage_booking_confirmation_request,
         }
 
         if user.state in state_functions:
@@ -69,6 +73,7 @@ class ConversationService(TGObject):
             'rent_equipment': self.handle_rent_equipment_service,
             'instructor': self.handle_instructor_service,
             'food_coffee': self.handle_food_coffee_service,
+            'massage': self.handle_massage_service,
         }
 
         if service not in service_handlers:
@@ -86,8 +91,9 @@ class ConversationService(TGObject):
 
         user = self.users_repo.find_user(self.user_id)
         lang = user.lead.lang
+        file_path = utils.get_path_to_asset('new_gudauri_map.png')
         first_text = tmp.rent_equipment_info_text(lang)
-        await self.respond(first_text)
+        await self.respond(first_text, file=file_path)
 
         second_text = tmp.rent_equipment_questions_text(lang)
         await self.respond(second_text)
@@ -97,7 +103,7 @@ class ConversationService(TGObject):
         response = api.extract_rental_equipment_details(self.text)
         lang = user.lead.lang
 
-        if response['is_request_canceled']:
+        if response.get('is_request_canceled'):
             return await self.all_services_menu()
 
         check_answer_response = api.analyze_answer_yes_no(self.text)
@@ -141,7 +147,7 @@ class ConversationService(TGObject):
         self.users_repo.update_user(
             self.user_id,
             state='hire_instructor_info_request',
-            state_data={'date_time': 'None', 'lesson_preference': 'None', 'equipment': 'None'}
+            state_data={'dates': 'None', 'time': 'None', 'equipment': 'None', 'participants': 'None', 'age': 'None'}
         )
 
         user = self.users_repo.find_user(self.user_id)
@@ -171,12 +177,8 @@ class ConversationService(TGObject):
             state_data=user.state_data
         )
 
-        date_time = user.state_data.get('date_time')
-        lesson_preference = user.state_data.get('lesson_preference')
-        equipment = user.state_data.get('equipment')
-
         if 'None' in user.state_data.values():
-            text = tmp.instructor_booking_error(lang, date_time, equipment, lesson_preference)
+            text = tmp.instructor_booking_error(lang, user.state_data)
             return await self.respond(text)
 
         user.state_data.update({'name': 'None', 'phone_number': 'None', 'place': 'None'})
@@ -207,20 +209,22 @@ class ConversationService(TGObject):
             state_data=user.state_data
         )
 
+        dates = user.state_data.get('dates')
+        time = user.state_data.get('time')
+        equipment = user.state_data.get('equipment')
+        participants = user.state_data.get('participants')
+        age = user.state_data.get('age')
         name = user.state_data.get('name')
         phone_number = user.state_data.get('phone_number')
         place = user.state_data.get('place')
-        date_time = user.state_data.get('date_time')
-        lesson_preference = user.state_data.get('lesson_preference')
-        equipment = user.state_data.get('equipment')
 
         if 'None' in user.state_data.values():
-            text = tmp.instructor_booking_user_data_request_error(user.lead.lang, name, phone_number, place)
+            text = tmp.instructor_booking_user_data_request_error(user.lead.lang, user.state_data)
             return await self.respond(text)
 
         self.users_repo.update_user(self.user_id, state='hire_instructor_confirmation_request')
 
-        text = tmp.instructor_booking_confirmation_text(user.lead.lang, date_time, equipment, lesson_preference, name, phone_number, place)
+        text = tmp.instructor_booking_confirmation_text(user.lead.lang, dates, time, equipment, participants, age, name, phone_number, place)
         return await self.respond(text)
 
     async def hire_instructor_confirmation_request(self):
@@ -228,17 +232,19 @@ class ConversationService(TGObject):
         response = api.analyze_answer_yes_no(self.text)
         answer = response['answer']
 
-        if response['is_request_canceled']:
+        if response.get('is_request_canceled'):
             return await self.handle_instructor_service()
 
         if answer:
-            date_time = user.state_data.get('date_time')
-            lesson_preference = user.state_data.get('lesson_preference')
+            dates = user.state_data.get('dates')
+            time = user.state_data.get('time')
             equipment = user.state_data.get('equipment')
+            participants = user.state_data.get('participants')
+            age = user.state_data.get('age')
             name = user.state_data.get('name')
             phone_number = user.state_data.get('phone_number')
             place = user.state_data.get('place')
-            first_text = tmp.new_instructor_booking_text(user, date_time, lesson_preference, equipment, name, phone_number, place)
+            first_text = tmp.new_instructor_booking_text(user, dates, time, equipment, participants, age, name, phone_number, place)
             await stg.bot.send_message(stg.notification_box_chat_id, first_text)
 
             second_text = tmp.instructor_booking_confirmed_text(user.lead.lang)
@@ -266,7 +272,6 @@ class ConversationService(TGObject):
         lang = user.lead.lang
 
         order_details = api.extract_food_order_details(self.text)
-        total_price = order_details.get('total_price')
         selected_items = order_details.get('selected_items')
 
         if order_details.get('is_request_canceled'):
@@ -280,7 +285,7 @@ class ConversationService(TGObject):
             state_data=order_details
         )
 
-        text = tmp.food_order_text(lang, selected_items, total_price)
+        text = tmp.food_order_text(lang, selected_items)
         self.users_repo.update_user(self.user_id, state='food_order_confirmation_request')
         return await self.respond(text)
 
@@ -289,15 +294,15 @@ class ConversationService(TGObject):
         response = api.analyze_answer_yes_no(self.text)
         answer = response['answer']
 
-        if response['is_request_canceled']:
+        if response.get('is_request_canceled'):
             return await self.handle_food_coffee_service()
 
         if answer:
             selected_items = user.state_data.get('selected_items')
-            total_price = user.state_data.get('total_price')
+            total_price = tmp.calculate_total_price(selected_items)
             food_order = self.users_repo.add_food_order(selected_items, total_price)
 
-            first_text = tmp.new_food_order_text(user, selected_items, total_price)
+            first_text = tmp.new_food_order_text(user, selected_items)
             await stg.bot.send_message(stg.notification_box_chat_id, first_text)
 
             file_path = utils.get_path_to_asset('new_gudauri_map.png')
@@ -309,3 +314,94 @@ class ConversationService(TGObject):
             pass
         else:
             return await self.handle_rent_equipment_service()
+
+    async def handle_massage_service(self):
+        self.users_repo.update_user(
+            self.user_id,
+            state='massage_type_info_request',
+            state_data=None,
+        )
+
+        user = self.users_repo.find_user(self.user_id)
+        lang = user.lead.lang
+        text = tmp.massage_service_info_text(lang)
+        await self.respond(text)
+
+    async def handle_massage_type_info_request(self):
+        user = self.users_repo.find_user(self.user_id)
+        response = api.extract_massage_details(self.text)
+        lang = user.lead.lang
+
+        if response.get('is_request_canceled'):
+            return await self.all_services_menu()
+
+        response.pop("is_request_canceled", None)
+
+        if 'None' in response.values():
+            return await self.respond(tmp.massage_booking_error(lang))
+
+        user.state_data = response
+        self.users_repo.update_user(
+            self.user_id,
+            state='massage_date_info_request',
+            state_data=user.state_data
+        )
+
+        text = tmp.massage_type_request_text(lang)
+        return await self.respond(text)
+
+    async def handle_massage_date_info_request(self):
+        user = self.users_repo.find_user(self.user_id)
+        response = api.extract_booking_details_for_massage(self.text)
+        lang = user.lead.lang
+
+        if response.get('is_request_canceled'):
+            return await self.handle_massage_service()
+
+        response.pop("is_request_canceled", None)
+
+        if 'None' in response.values():
+            return await self.respond(tmp.massage_booking_error(lang))
+
+        user.state_data.update(response)
+        self.users_repo.update_user(
+            self.user_id,
+            state='massage_booking_confirmation_request',
+            state_data=user.state_data
+        )
+
+        dates = user.state_data.get('dates')
+        time = user.state_data.get('time')
+        massage_type = user.state_data.get('massage_type')
+        duration = user.state_data.get('duration')
+
+        text = tmp.massage_booking_confirmation_request_text(lang, dates, time, massage_type, duration)
+        return await self.respond(text)
+
+    async def handle_massage_booking_confirmation_request(self):
+        user = self.users_repo.find_user(self.user_id)
+        lang = user.lead.lang
+        response = api.analyze_answer_yes_no(self.text)
+        answer = response['answer']
+
+        if response.get('is_request_canceled'):
+            return await self.handle_massage_service()
+
+        if answer:
+            dates = user.state_data.get('dates')
+            time = user.state_data.get('time')
+            massage_type = user.state_data.get('massage_type')
+            duration = user.state_data.get('duration')
+
+            first_text = tmp.massage_booking_text(user, dates, time, massage_type, duration)
+            await stg.bot.send_message(stg.notification_box_chat_id, first_text)
+
+            file_path = utils.get_path_to_asset('new_gudauri_map.png')
+            second_text = tmp.massage_booking_confirmed_text(lang)
+            await self.respond(second_text, file=file_path)
+
+            return await self.all_services_menu()
+        elif answer is None:
+            pass
+        else:
+            return await self.handle_massage_service()

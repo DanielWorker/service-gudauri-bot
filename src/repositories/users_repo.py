@@ -91,6 +91,7 @@ class UsersRepository:
     def add_food_order(self, selected_items, total_price):
         order = FoodOrder(total_price=total_price)
         self.session.add(order)
+        self.session.flush()
 
         for item in selected_items:
             order_item = FoodOrderItem(
