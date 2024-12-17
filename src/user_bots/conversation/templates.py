@@ -32,7 +32,7 @@ def all_services_text(lang):
 
 Ski-lift Open/Closed 🟢🔴 
 Road status 🟢🔴
-[Check]](https://t.me/ASG_Status)
+[Check](https://t.me/ASG_Status)
 """
     else:
         text = """Здравствуйте, напишите цифру/слово на русском
