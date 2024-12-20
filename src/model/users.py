@@ -112,6 +112,7 @@ class FoodOrder(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     total_price: Mapped[float] = mapped_column(Float)
+    order_type: Mapped[str] = mapped_column(String, nullable=True)
 
     order_items: Mapped["FoodOrderItem"] = relationship(back_populates="order", cascade="all, delete-orphan")
 

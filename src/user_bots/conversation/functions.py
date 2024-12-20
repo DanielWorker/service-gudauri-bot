@@ -30,6 +30,7 @@ class ConversationService(TGObject):
             'hire_instructor_confirmation_request': self.hire_instructor_confirmation_request,
             # Food & Coffee
             'food_order_info_request': self.handle_food_order_info_request,
+            'food_order_delivery_details_request': self.handle_food_order_delivery_details_request,
             'food_order_confirmation_request': self.handle_food_order_confirmation_request,
             # Massage
             'massage_date_info_request': self.handle_massage_date_info_request,
@@ -42,13 +43,18 @@ class ConversationService(TGObject):
             return await state_functions[user.state]()
 
     async def handle_new_user(self):
-        self.users_repo.update_user(self.user_id, state='language_request')
+        detected_language = api.detect_input_language(self.text)
+        if detected_language == 'undefined':
+            self.users_repo.update_user(self.user_id, state='language_request')
 
-        text = tmp.select_language_text()
-        await self.respond(text)
+            text = tmp.select_language_text()
+            await self.respond(text)
+        else:
+            self.users_repo.update_lead(self.user_id, lang=detected_language)
+            return await self.all_services_menu()
 
     async def handle_language_request(self):
-        response = api.determine_language(self.text)
+        response = api.get_selected_language(self.text)
         lang = response["language"]
 
         if lang != "undefined":
@@ -60,8 +66,8 @@ class ConversationService(TGObject):
 
     async def all_services_menu(self):
         self.users_repo.update_user(self.user_id, state='service_request', state_data=None)
-        user = self.users_repo.find_user(self.user_id)
-        text = tmp.all_services_text(user.lead.lang)
+        lead = self.users_repo.find_lead(user_id=self.user_id)
+        text = tmp.all_services_text(lead.lang)
         return await self.respond(text)
 
     async def handle_service_request(self):
@@ -134,8 +140,9 @@ class ConversationService(TGObject):
             first_text = tmp.new_equipment_booking_text(user, user_answers)
             await stg.bot.send_message(stg.notification_box_chat_id, first_text)
 
+            file_path = utils.get_path_to_asset('parking.gif')
             second_text = tmp.equipment_booking_confirmed_text(user.lead.lang)
-            await self.respond(second_text)
+            await self.respond(second_text, file=file_path)
 
             return await self.all_services_menu()
         elif answer is None:
@@ -254,12 +261,13 @@ class ConversationService(TGObject):
         elif answer is None:
             pass
         else:
-            return await self.handle_rent_equipment_service()
+            return await self.handle_hire_instructor_info_request()
 
     async def handle_food_coffee_service(self):
         self.users_repo.update_user(
             self.user_id,
-            state='food_order_info_request'
+            state='food_order_info_request',
+            state_data={"selected_items": [], 'order_type': 'delivery', 'house_name': 'None', 'apartment': 'None', 'phone_number': 'None'}
         )
 
         user = self.users_repo.find_user(self.user_id)
@@ -274,46 +282,114 @@ class ConversationService(TGObject):
         order_details = api.extract_food_order_details(self.text)
         selected_items = order_details.get('selected_items')
 
+        # Отмена заказа
         if order_details.get('is_request_canceled'):
             return await self.all_services_menu()
 
-        if not selected_items:
+        order_details.pop("is_request_canceled", None)
+
+        # Подтверждение заказа
+        check_answer_response = api.analyze_answer_yes_no(self.text)
+        answer = check_answer_response['answer']
+        if answer and answer != 'None' and user.state_data['selected_items']:
+            return await self.check_food_order_details()
+
+        # Выбор типа заказа
+        order_type = api.detect_delivery_or_pickup(self.text)
+        if order_type != 'None':
+            user.state_data['order_type'] = order_type
+
+        # Проверка выбран ли товар
+        elif not selected_items and not user.state_data['selected_items']:
             return await self.respond(tmp.no_food_selected_error(lang))
+
+        # Проверка наличия недоступных товаров
+        elif tmp.has_invalid_items(selected_items):
+            return await self.respond(tmp.food_order_invalid_error(lang))
+
+        else:
+            user.state_data['selected_items'].extend(selected_items)
 
         self.users_repo.update_user(
             self.user_id,
-            state_data=order_details
+            state_data=user.state_data
         )
 
-        text = tmp.food_order_text(lang, selected_items)
-        self.users_repo.update_user(self.user_id, state='food_order_confirmation_request')
+        return await self.send_food_order_message()
+
+    async def send_food_order_message(self):
+        self.users_repo.update_user(self.user_id, state='food_order_info_request')
+        user = self.users_repo.find_user(self.user_id)
+        text = tmp.food_order_text(user.lead.lang, user.state_data['selected_items'], user.state_data['order_type'])
         return await self.respond(text)
+
+    async def check_food_order_details(self):
+        user = self.users_repo.find_user(self.user_id)
+        order_type = user.state_data['order_type']
+
+        if order_type == 'delivery':
+            text = tmp.food_order_delivery_details_text(user.lead.lang)
+            await self.respond(text)
+            self.users_repo.update_user(self.user_id, state='food_order_delivery_details_request')
+
+        else:
+            return await self.handle_food_order_confirmation_request()
+
+    async def handle_food_order_delivery_details_request(self):
+        user = self.users_repo.find_user(self.user_id)
+        lang = user.lead.lang
+        details = api.extract_user_details_for_food_order(self.text)
+
+        if details.get('is_request_canceled', False):
+            return await self.send_food_order_message()
+
+        details.pop("is_request_canceled", None)
+
+        for key, value in details.items():
+            if value != 'None' and value:
+                user.state_data[key] = details[key]
+
+        self.users_repo.update_user(
+            self.user_id,
+            state_data=user.state_data
+        )
+
+        if 'None' in user.state_data.values():
+            text = tmp.food_order_delivery_details_request_error(lang, user.state_data)
+            return await self.respond(text)
+
+        self.users_repo.update_user(self.user_id, state='food_order_confirmation_request')
+        text = tmp.food_order_delivery_details_confirmation_text(user.lead.lang, user.state_data)
+        await self.respond(text)
 
     async def handle_food_order_confirmation_request(self):
         user = self.users_repo.find_user(self.user_id)
         response = api.analyze_answer_yes_no(self.text)
         answer = response['answer']
 
-        if response.get('is_request_canceled'):
-            return await self.handle_food_coffee_service()
-
         if answer:
             selected_items = user.state_data.get('selected_items')
+            order_type = user.state_data.get('order_type')
             total_price = tmp.calculate_total_price(selected_items)
-            food_order = self.users_repo.add_food_order(selected_items, total_price)
+            food_order = self.users_repo.add_food_order(selected_items, order_type, total_price)
 
-            first_text = tmp.new_food_order_text(user, selected_items)
-            await stg.bot.send_message(stg.notification_box_chat_id, first_text)
+            if order_type == 'delivery':
+                delivery_details = {**user.state_data}
+            else:
+                delivery_details = None
+
+            first_text = tmp.new_food_order_text(user, selected_items, order_type, delivery_details)
+            await stg.bot.send_message(stg.food_orders_chat_id, first_text)
 
             file_path = utils.get_path_to_asset('new_gudauri_map.png')
-            second_text = tmp.food_order_confirmed_text(user.lead.lang, food_order.id)
+            second_text = tmp.food_order_confirmed_text(user.lead.lang, food_order.id, order_type)
             await self.respond(second_text, file=file_path)
 
             return await self.all_services_menu()
         elif answer is None:
             pass
         else:
-            return await self.handle_rent_equipment_service()
+            return await self.handle_food_coffee_service()
 
     async def handle_massage_service(self):
         self.users_repo.update_user(
@@ -394,7 +470,7 @@ class ConversationService(TGObject):
             duration = user.state_data.get('duration')
 
             first_text = tmp.massage_booking_text(user, dates, time, massage_type, duration)
-            await stg.bot.send_message(stg.notification_box_chat_id, first_text)
+            await stg.bot.send_message(stg.massage_chat_id, first_text)
 
             file_path = utils.get_path_to_asset('new_gudauri_map.png')
             second_text = tmp.massage_booking_confirmed_text(lang)

@@ -10,7 +10,50 @@ OPENAI_API_KEY = "sk-proj-JS3yiKbjyRW7c7GYSkpIjs4EZZaHY8YsDsGN4pl_m2579jHQag9XLp
 client = OpenAI(api_key=OPENAI_API_KEY)
 
 
-def determine_language(text):
+def detect_input_language(text):
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {
+                "role": "system",
+                "content": (
+                    "You are an assistant that determines the language of a user's input. "
+                    "If the text is in Russian, respond with 'russian'. If the text is in English, respond with 'english'. "
+                    "For all other languages or if the text is unrecognizable, respond with 'undefined'. "
+                    "Only return a JSON object containing the key 'language' with one of the following values: "
+                    "'russian', 'english', or 'undefined'."
+                )
+            },
+            {
+                "role": "user",
+                "content": text
+            }
+        ],
+        response_format={
+            "type": "json_schema",
+            "json_schema": {
+                "name": "get_language_data",
+                "schema": {
+                    "type": "object",
+                    "properties": {
+                        "language": {
+                            "description": "The detected language of the user's input.",
+                            "type": "string",
+                            "enum": ["russian", "english", "undefined"]
+                        }
+                    },
+                    "required": ["language"],
+                    "additionalProperties": False
+                }
+            }
+        }
+    )
+
+    result = response.choices[0].message.content
+    return json.loads(result)['language']
+
+
+def get_selected_language(text):
     response = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
@@ -63,6 +106,7 @@ def determine_service(text):
                 "content": (
                     "You are an assistant that analyzes the user's request for services. "
                     "The user can provide a response in Russian or English, either by service name or by the service number from the following list:""1. Rent Ski/Board Прокат"
+                    "1. Rent Equipment Ski/Board Прокат снаряжения"
                     "2. Instructor Инструктор"
                     "3. Food/Coffee Еда/Кофе"
                     "4. Massage Массаж"
@@ -252,10 +296,8 @@ def extract_mentor_booking_details(user_input):
 
 
 def extract_user_details(user_input):
-    # Регулярное выражение для поиска международного номера телефона
-    phone_pattern = r"(\+?[0-9]{1,3}[ -]?)?(\(?\d{1,5}\)?[ -]?)?[\d\s\-]{6,13}"
+    phone_pattern = r"(\+?\d{1,3}[ -]?)?(\(?\d{1,5}\)?[ -]?)?[\d\s\-]{6,13}"
 
-    # Поиск телефона с помощью регулярного выражения
     match = re.search(phone_pattern, user_input)
     phone_number = match.group(0).strip() if match else 'None'
 
@@ -349,6 +391,7 @@ def extract_food_order_details(user_input):
                     "Analyze and match product names or numbers accurately. "
                     "You should handle input in both English and Russian, account for typos, and match product names "
                     "or numbers accurately. "
+                    "Do not treat 'pickup' or 'self-pickup' as a cancellation request. "
                     "Example input: '1', '3', 'Syrniki 2 psc', 'Блинчики', 'Вок с курицей 2 шт', 'Burger 6', '1 Syrniki and 3 Borscht'. "
                     "Menu: "
                     "1. Syrniki with sour cream (3 pcs) — 10₾, "
@@ -415,6 +458,114 @@ def extract_food_order_details(user_input):
 
     result = response.choices[0].message.content
     return json.loads(result)
+
+
+def detect_delivery_or_pickup(text):
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {
+                "role": "system",
+                "content": (
+                    "You are an assistant that determines if the user's input refers to 'delivery' or 'pickup'. "
+                    "The user might input their choice in English ('delivery', 'pickup') or Russian ('доставка', 'самовывоз'). "
+                    "If the input indicates delivery, respond with 'delivery'. If it indicates pickup, respond with 'pickup'. "
+                    "For any other input or if it is unclear, respond with 'None'. "
+                    "Only return a JSON object containing the key 'choice' with one of the following values: "
+                    "'delivery', 'pickup', or 'None'."
+                )
+            },
+            {
+                "role": "user",
+                "content": text
+            }
+        ],
+        response_format={
+            "type": "json_schema",
+            "json_schema": {
+                "name": "get_choice_data",
+                "schema": {
+                    "type": "object",
+                    "properties": {
+                        "choice": {
+                            "description": "The user's choice between delivery, pickup, or None if unclear.",
+                            "type": "string",
+                            "enum": ["delivery", "pickup", "null"]
+                        }
+                    },
+                    "required": ["choice"],
+                    "additionalProperties": False
+                }
+            }
+        }
+    )
+
+    result = response.choices[0].message.content
+    return json.loads(result)['choice']
+
+
+def extract_user_details_for_food_order(user_input):
+    phone_pattern = r"(\+?\d{1,3}[ -]?)?(\(?\d{1,5}\)?[ -]?)?[\d\s\-]{6,13}"
+
+    match = re.search(phone_pattern, user_input)
+    phone_number = match.group(0).strip() if match else 'None'
+
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {
+                "role": "system",
+                "content": (
+                    "You are an assistant that extracts details from the user's input. "
+                    "The user must answer three questions: "
+                    "1. What is the name/number of your house? "
+                    "2. What is your apartment number? "
+                    "3. What is your phone number? "
+                    "You must extract the following keys: "
+                    "- 'house_name': the name/number of the house, or 'None' if not provided or invalid. "
+                    "- 'apartment': the number of the apartment, or 'None' if not provided or invalid. "
+                    "- 'phone_number': the phone number, or 'None' if it is not in a valid international format. "
+                    "Accept answers in both English and Russian. Return 'None' for any missing or unclear values. "
+                    "The result must be returned as a JSON object with the keys 'house_name', 'apartment', and 'phone_number'."
+                )
+            },
+            {
+                "role": "user",
+                "content": f"{user_input}"
+            }
+        ],
+        response_format={
+            "type": "json_schema",
+            "json_schema": {
+                "name": "get_user_details",
+                "schema": {
+                    "type": "object",
+                    "properties": {
+                        "house_name": {
+                            "description": "The name of the house provided by the user.",
+                            "type": ["string", "null"]
+                        },
+                        "apartment": {
+                            "description": "The apartment number provided by the user.",
+                            "type": ["string", "null"]
+                        },
+                        "phone_number": {
+                            "description": "The phone number provided by the user in valid international format.",
+                            "type": ["string", "null"]
+                        }, **default_properties
+                    },
+                    "required": ["house_name", "apartment", "phone_number"],
+                    "additionalProperties": False
+                }
+            }
+        }
+    )
+
+    result = response.choices[0].message.content
+    user_details = json.loads(result)
+    user_details["phone_number"] = phone_number
+
+    return user_details
 
 
 def analyze_answer_yes_no(text):
@@ -571,11 +722,12 @@ def extract_massage_details(user_input):
 
 default_properties = {
     "is_request_canceled": {
-        "description": "True if the response contains a cancellation request, otherwise False.",
+        "description": "True if the response contains a cancellation request or 'menu'/'меню' command in any register, otherwise False.",
         "type": "boolean"
     },
 }
 
+# x = detect_delivery_or_pickup('1 2 3 4')
 # print(extract_mentor_booking_details('2 взрослых 4 января 12.30 Сноуборд, 10-20 лет'))
 # print(extract_mentor_booking_details('8 января\n10 10\nЛыжи\n1 ребенок\n10 лет'))
 # print(extract_food_order_details('2 2 2 4 7'))

@@ -2,8 +2,8 @@ from src.bot import utils
 
 
 def select_language_text():
-    return ("Цифрой/словом выберите язык\n"
-            "Write number/word to choose language\n"
+    return ("Выберите язык напишите цифру/слово\n"
+            "Choose language with number/word\n"
             "1 `Русский`\n"
             "2 `English`\n")
 
@@ -15,7 +15,7 @@ def select_language_error():
 
 def all_services_text(lang):
     if lang == "english":
-        text = """Write number/word in English, what do you want?
+        text = """Write number/word, what do you want?
 
 1. 🎿Rent Ski & Board 
 2. ⛷Instructor    
@@ -26,16 +26,16 @@ def all_services_text(lang):
 7. 🏍Snowbike tour     
 8. 💵Exchange       
 9. 🛠Ski-service
-11. 📹 Photo/Video  
-12. 🧹Cleaning           
-13. 🏠RentFlat
+10. 📹 Photo/Video  
+11. 🧹Cleaning           
+12. 🏠RentFlat
 
 Ski-lift Open/Closed 🟢🔴 
 Road status 🟢🔴
 [Check](https://t.me/ASG_Status)
 """
     else:
-        text = """Здравствуйте, напишите цифру/слово на русском
+        text = """Здравствуйте, напишите цифру/слово
 
 1. 🎿Прокат лыж & Сноубордов
 2. ⛷Инструктор    
@@ -46,9 +46,9 @@ Road status 🟢🔴
 7. 🏍Тур на снегоходе
 8. 💵Обмен валют       
 9. 🛠Ремонт снаряжения
-11. 📹Фото & Видео  
-12. 🧹Уборка           
-13. 🏠Аренда Квартир
+10. 📹Фото & Видео  
+11. 🧹Уборка           
+12. 🏠Аренда Квартир
 
 Статус подъемников 🟢🔴
 Статус авто дорог из-за снега 🟢🔴
@@ -56,25 +56,6 @@ Road status 🟢🔴
 """
 
     return text
-
-
-def service_info_text(lang):
-    if lang == "english":
-        return """From 9:00 AM to 6:00 PM
-New Gudauri
-Suites Building
-Enter through any door
-Go to floor -1 (take the elevator)
-Exit the elevator, go straight, and then right (follow the signs)
-to the rental @AllServiceGudauri"""
-    else:
-        return """С 9.00 до 18.00
-Нью-Гудаури
-Здание Suites
-Вход с любой двери во внутрь
--1 этаж, обязательно спуститься на лифте 
-Из лифта вперед (и направо дальше по указателям)
-к прокату @AllServiceGudauri"""
 
 
 # ======== Rent Equipment ========
@@ -125,9 +106,11 @@ def rent_equipment_info_text(lang):
 
 def rent_equipment_questions_text(lang):
     if lang == "english":
-        return "What equipment or clothing would you like to rent?"
+        return ("What equipment or clothing would you like to rent?\n\n"
+                "__To return to the menu, type 'menu' / 'cancel' / 'no'__")
     else:
-        return "Что вы хотите взять из снаряжения, одежды?"
+        return ("Что вы хотите взять из снаряжения, одежды?\n\n"
+                "__Для возврата в меню напишите 'меню' / 'отмена' / 'нет'__")
 
 
 def rent_equipment_error(lang):
@@ -170,16 +153,21 @@ def new_equipment_booking_text(user, user_answers):
 
 
 def equipment_booking_confirmed_text(lang):
+    l_text = 'Link' if lang == "english" else 'Ссылка'
+    link = f'[{l_text}](https://yandex.com/maps/-/CHEKYI5W)'
+
     if lang == "english":
-        return ("**🎉 Your equipment rental is confirmed!**\n"
-                "New Gudauri, the building closest to the lift.\n"
-                "Use any of the 3 entrances, go to the elevator, floor -1.\n"
-                "We’ll be waiting for you!")
+        return ("**🎉 Your equipment booking is confirmed!**\n"
+                "📍 New Gudauri, `42.469758, 44.491701` (click to copy)\n"
+                f"Underground parking, under the outdoor pool ({link})\n"
+                "We will be waiting for you!\n"
+                "Please pay in cash (₾/$).")
     else:
         return ("**🎉 Ваша бронирование снаряжения подтверждено!**\n"
-                "Нью-Гудаури, дом ближний к подъемнику"
-                "Любой вход из 3х, проходите к лифту, -1 этаж"
-                "Будем ждать вас!")
+                "📍 Нью-Гудаури, `42.469758, 44.491701` (нажмите что бы скопировать)\n"
+                f"Подземная парковка, под открытым бассейном ({link})\n"
+                "Будем ждать вас!\n"
+                "Пожалуйста, оплатите наличными (₾/$).")
 # ======== Rent Equipment ========
 
 
@@ -292,7 +280,9 @@ January 4
 12:30
 Snowboard
 2 adults
-25-50 years old"""
+25-50 years old
+
+__To return to the menu, type 'menu' / 'cancel' / 'no'__"""
     else:
         return """
 1. На какие даты вас записать?
@@ -312,7 +302,9 @@ Snowboard
 12 30
 Сноуборд
 2 взр
-25-50 лет"""
+25-50 лет
+
+__Для возврата в меню напишите 'меню' / 'отмена' / 'нет'__"""
 
 
 def instructor_booking_error(lang, state_data):
@@ -403,19 +395,41 @@ walk to the Pirveli slope — the meeting point will be right there.
 
 def instructor_booking_user_data_request_text(lang):
     if lang == "english":
-        text = ('**Great! Just answer the following questions:**\n'
-                '1. What is your name?\n'
-                '2. What is your phone number?\n'
-                '3. Where do you live or where will you stay?\n'
-                'This is needed for the instructor to know,\n'
-                'where it will be more convenient to start and meet you')
+        return """**Great! Now, please answer the following questions:**
+1. What is your name?
+2. What is your phone number?
+3. Where do you live or will be staying?
+This is needed for the instructor to know,
+where it will be more convenient to start and meet you.
+
+**Examples (please write in a column):**
+Daniil
++995574253556
+New Gudauri
+
+Maria
++995 57 425 3556
+Club 2100
+
+__To return to the menu, type 'menu' / 'cancel' / 'no'__"""
     else:
-        text = ('**Отлично! Осталось ответить на следующие вопросы:**\n'
-                '1. Как вас зовут?\n'
-                '2. Какой у вас номер телефона?\n'
-                '3. Где вы живете или будете жить?\n'
-                'Это нужно инструктору, чтобы знать,\n'
-                'где вам будет ближе начать и встретить вас')
+        return """"**Отлично! Осталось ответить на следующие вопросы:**
+1. Как вас зовут?
+2. Какой у вас номер телефона?
+3. Где вы живете или будете жить?
+Это нужно инструктору, чтобы знать,
+где вам будет ближе начать и встретить вас
+
+**Примеры (пишите в столбик):**
+Даниил
++995574253556
+Нью Гудаури
+
+Мария
++995 57 425 3556
+Club 2100
+
+__Для возврата в меню напишите 'меню' / 'отмена' / 'нет'__"""
 
     return text
 
@@ -493,103 +507,111 @@ def new_instructor_booking_text(user, dates, time, equipment, participants, age,
 
 def instructor_booking_confirmed_text(lang):
     if lang == "english":
-        return ("🎉 Your booking is confirmed!\n\n"
+        return ("**🎉 Your booking is confirmed!**\n\n"
                 "**Please pay in cash (₾/$)**\n"
                 "Your contact information has been shared with the instructor.")
     else:
-        return ("🎉 Ваша запись подтверждена!\n\n"
+        return ("**🎉 Ваша запись подтверждена!**\n\n"
                 "**Пожалуйста, оплатите наличными (₾/$)**\n"
-                "Ваш контакт передан инструктору")
+                "Ваш контакт передан инструктору\n")
 # ======== Hire Instructor ========
 
 
 # ======== Food & Coffee ========
 def food_order_info_text(lang):
     if lang == "english":
-        text = """**🍔 Food & Coffee at New-Gudauri Loft 2**
-**🛍️ Pickup Only**
+        text = """**🍔 Food by New-Gudauri**
+**🛍 Delivery within ~30-55 minutes**
+🆓 Free delivery for orders over 60₾ (lari), otherwise 10₾
 
-Make your choice using numbers or letters:  
+Make your selection, by number or letter:
 
-**🍴Main Dishes**  
-**1.** Syrniki + sour cream (3 pcs) — **10₾**  
-**2.** Pancakes + sour cream (3 pcs) — **10₾**  
-**3.** Rice-milk porridge + jam — **10₾**  
-**4.** “FastTrack” Sandwich (2 pcs) — **5₾**  
-**5.** Borscht soup (beef) — **10₾**  
-**6.** “Junior” Burger (beef) — **15₾**  
-**7.** “KurCheese” Burger — **20₾**  
-**8.** “BeefCheese” Burger (beef) — **25₾**  
+**🥞 Breakfast**
+**1.** Syrniki + sour cream (3 pcs) — **10₾**
+**2.** Pancakes + sour cream (3 pcs) — **10₾**
+**3.** Rice-milk porridge + jam — **10₾**
 
-**🍝 Hot Dishes & Wok**  
-**9.**  Spaghetti Carbonara — **15₾**  
-**10.** Chicken Wok — **15₾**  
-**11.** Vegetable Wok — **15₾**  
-**12.** Rice Wok with beef — **20₾**  
+**🍴Main dishes**
+**4.** "FastTrack" sandwich (2 pcs) — **5₾**
+**5.** Borscht soup (beef) — **10₾**
+**6.** "Junior" burger (beef) — **15₾**
+**7.** "KurChiz" burger — **20₾**
+**8.** "BifChiz" burger (beef) — **25₾**
+**9.** Vegetable wok — **15₾**
+**10.** Chicken wok — **15₾**
 
-**🥤 Drinks**  
-**13.** Water 0.5 L — **2.5₾**  
-**14.** Cola 0.5 L — **5₾**  
-**15.** Quince juice 1 L — **10₾**  
-**16.** 100% Grape juice 1 L — **15₾**  
-**17.** Freshly squeezed apple juice 0.5 L — **20₾**  
+**🥗 Salads**
+**11.** Georgian with walnuts — **10₾**
+**12.** Caesar with chicken — **15₾**
 
-**☕ Coffee**  
-**18.** Americano (350 ml) — **5₾**  
-**19.** Cappuccino (350 ml) — **7.5₾**  
-**20.** Latte (350 ml) — **10₾**  
-**21.** Glace (350 ml) — **10₾**"""
+**🥤 Drinks**
+**13.** Water 0.7L — **2.5₾**
+**14.** "Coca-Cola" water 0.5L — **5₾**
+**15.** Quince juice 1L — **10₾**
+**16.** Cherry juice 1L — **10₾**
+**17.** 100% Apple juice 1L — **15₾**
+**18.** 100% Grape juice 1L — **15₾**
+**19.** Freshly squeezed pomegranate 0.5L — **20₾**
+**20.** Freshly squeezed orange + mandarin 0.5L — **20₾**
+
+**Order example:**
+4 5 8 11 15"""
     else:
-        text = """**🍔 Еда & Кофе в New-Gudauri Loft 2**
-**🛍️ Только самовывоз**
+        text = """**🍔 Еда по New-Gudauri**
+**🛍 Доставка в течении ~30-55 минут**
+🆓 Бесплатно от 60₾(лари) иначе 10₾
 
 Сделайте свой выбор, цифрами или буквами:
 
-**🍴Основные блюда**
+**🥞 Завтрак**
 **1.** Сырники + сметана (3 шт) — **10₾**
 **2.** Блинчики + сметана (3 шт) — **10₾**
 **3.** Каша рисо-молочная + варенье — **10₾**
+
+**🍴Основные блюда**
 **4.** Сэндвич “ФастТрэк” (2 шт) — **5₾**
 **5.** Суп борщ (говядина) — **10₾**
 **6.** Бургер “Джуниор” (говяжий) — **15₾**
 **7.** Бургер “КурЧиз” — **20₾**
 **8.** Бургер “БифЧиз” (говяжий) — **25₾**
-
-**🍝 Горячее и Wok**
-**9.**  Спагетти Карбонара — **15₾**
+**9.** Вок с овощами — **15₾**
 **10.** Вок с курицей — **15₾**
-**11.** Вок с овощами — **15₾**
-**12.** Рис-вок с говядиной — **20₾**
+
+**🥗 Салаты**
+**11.** Грузинский с грец. орехом — **10₾**
+**12.** Цезарь с курицей — **15₾**
 
 **🥤 Напитки**
-**13.** Вода 0.5 л — **2.5₾**
-**14.** Вода “Кола” 0.5 л — **5₾**
-**15.** Сок айва 1 л — 10₾
-**16.** Сок 100% виноград 1 л — **15₾**
-**17.** Свежевыжатый сок яблоко 0.5 л — **20₾**
+**13.** Вода 0.7л — **2.5₾**
+**14.** Вода “Кола” 0.5л — **5₾**
+**15.** Сок айва 1л — **10₾**
+**16.** Сок вишня 1л — **10₾**
+**17.** Сок 100% яблоко 1л — **15₾**
+**18.** Сок 100% виноград 1л — **15₾**
+**19.** Свежевыжатый гранат 0.5л — **20₾**
+**20.** Свежевыж. апельс.+мандарин 0.5л — **20₾**
 
-**☕ Кофе**
-**18.** Американо (350 мл) — **5₾**
-**19.** Капучино (350 мл) — **7.5₾**
-**20.** Латте (350 мл) — **10₾**
-**21.** Гляссе (350 мл) — **10₾**"""
+**Пример заказа:**
+4 5 8 11 15"""
 
     return text
 
 
-def food_order_text(lang, selected_items):
+def food_order_text(lang, selected_items, order_type):
     if lang == 'english':
         title = '📝 Your order'
-        payment_info = ('Please pay in cash in GEL or USD (₾/$).\n'
-                        'Currently, only pickup is available.\n\n'
-                        'Confirm your booking by replying with “yes” or “okay”.')
+        payment_info = ('**— You can still add more items to your order by writing below!**\n'
+                        '— To change the order type, write: "`pickup`"/"`delivery`"\n\n'
+                        '**Confirm your booking by replying with “yes” or “okay”**\n'
+                        f"To cancel the rental, type 'Cancel'")
     else:
         title = '📝 Ваш заказ'
-        payment_info = ('Пожалуйста, оплатите наличными (₾/$).\n'
-                        '**На данный момент доступен только самовывоз.**\n\n'
-                        '**Подтвердите ваше бронирование, написав “да”/“ага”**')
+        payment_info = ('**— Вы все еще можете дополнить заказ написав ниже!**\n'
+                        '— Что бы изменить тип заказа напишите: "`самовывоз`"/"`доставка`"\n\n'
+                        '**Подтвердите ваше бронирование, написав “да”/“ага”**\n'
+                        f"Для отмены аренды напишите 'отмена'")
 
-    order_text = get_order_text(selected_items, lang)
+    order_text = get_order_text(selected_items, order_type, lang)
     text = (f"**{title}:**\n"
             f"{order_text}\n\n"
             f"{payment_info}")
@@ -597,8 +619,16 @@ def food_order_text(lang, selected_items):
     return text
 
 
-def get_order_text(selected_items, lang='russian'):
-    total_text = 'Total' if lang == 'english' else 'Итого'
+def get_order_text(selected_items, order_type, lang='russian'):
+    if lang == 'english':
+        total_text = 'Total'
+        delivery_text = "Delivery"
+        order_type_text = 'Order type: Delivery' if order_type == 'delivery' else 'Order type: Pickup'
+    else:
+        total_text = 'Итого'
+        delivery_text = "Доставка"
+        order_type_text = 'Тип заказа: Доставка' if order_type == 'delivery' else 'Тип заказа: Самовывоз'
+
     total_price = calculate_total_price(selected_items)
     text = ''
 
@@ -612,7 +642,13 @@ def get_order_text(selected_items, lang='russian'):
             text += f'{n}. {position_name}\n'
             n += 1
 
-    text += f"\n{total_text}: {total_price}₾"
+    if total_price < 60 and order_type == 'delivery':
+        text += f"{n}. {delivery_text} — **10₾**\n"
+        total_price += 10
+
+    text += (f"——————\n"
+             f"🧾{total_text}: {total_price}₾\n"
+             f"🛍{order_type_text}")
 
     return text
 
@@ -628,36 +664,142 @@ def calculate_total_price(selected_items):
     return total_price
 
 
-def food_order_confirmed_text(lang, order_num):
+def food_order_confirmed_text(lang, order_num, order_type):
     if lang == 'english':
+        delivery_text = '📍 **Loft 2**, any entrance to the elevator, 2nd floor, **№238**' if order_type == 'pickup' else ''
         text = (f'**🛍️ Your order ({order_num}) is being prepared**\n'
-                '⏳ In about **20 minutes** it will be ready for pickup!\n'
-                '📍 **Loft 2**, any entrance to the elevator, 2nd floor, **№227**\n\n'
-                '**The operator will contact you soon and confirm your order. Thank you!**')
+                '⏳ In about **20-55 minutes** it will be ready for pickup!\n'
+                f'{delivery_text}\n'
+                '**The operator will contact you soon and confirm your order. Thank you!**\n'
+                '')
     else:
+        delivery_text = '📍 **Loft 2**, любой вход к лифту, 2 этаж, **№238**' if order_type == 'pickup' else ''
         text = (f'**🛍️ Ваш заказ ({order_num}) готовится**\n'
-                '⏳ Примерно через **20 минут** он будет готов для самовывоза!\n'
-                '📍 **Loft 2**, любой вход к лифту, 2 этаж, **№227**\n\n'
-                '**Оператор скоро свяжется с вами и подтвердит заказ, спасибо!**')
+                '⏳ Примерно через **20-55 минут** он будет готов для самовывоза!\n'
+                f'{delivery_text}\n'
+                '**Оператор скоро свяжется с вами и подтвердит заказ, спасибо!**\n'
+                f"Пожалуйста, оплатите наличными (₾/$)")
 
     return text
 
 
-def new_food_order_text(user, selected_items):
+def new_food_order_text(user, selected_items, order_type, delivery_details=None):
     user_mention = utils.get_user_mention(user.user_id, user.full_name)
     username = f' | @{user.username}' if user.username else ''
-    order_text = get_order_text(selected_items)
+    order_text = get_order_text(selected_items, order_type)
 
-    return (f"🆕 Заявка на еду\n\n"
+    text = (f"🆕 Заявка на еду\n\n"
             f"👤 {user_mention}{username}\n"
             f"{order_text}")
+
+    if delivery_details:
+        text += (f"\n\n**🛵 Доставка**\n"
+                 f"1. Дом: {delivery_details['house_name']}\n"
+                 f"2. Апартаменты: {delivery_details['apartment']}\n"
+                 f"3. Номер телефона: {delivery_details['phone_number']}\n")
+
+        return text
 
 
 def no_food_selected_error(lang):
     if lang == 'english':
-        return "Oops! You haven't selected any food or coffee yet. Please choose something before placing your order."
+        return ("Oops! You haven't selected any food or coffee yet. Please choose something before placing your order.\n"
+                "__Order example: 1 1 2 4__")
     else:
-        return "Ой! Вы еще не выбрали ни одно блюдо или кофе. Пожалуйста, выберите что-нибудь перед тем, как сделать заказ."
+        return ("Ой! Вы еще не выбрали ни одно блюдо или кофе. Пожалуйста, выберите что-нибудь перед тем, как сделать заказ.\n"
+                "__Пример заказа: 1 1 2 4__")
+
+
+def food_order_invalid_error(lang):
+    if lang == 'english':
+        return "The item number is incorrect. Please use the format ‘1 2 3 4’, separating each selected item with a space."
+    else:
+        return "Номер товара указан некорректно. Пожалуйста, используйте формат '1 2 3 4', разделяя пробелами каждую выбранную позицию."
+
+
+def food_order_delivery_details_text(lang):
+    if lang == 'english':
+        return ("1. What is your house name? Check the map.\n"
+                "2. What is your apartment number?\n"
+                "3. What is your phone number?")
+    else:
+        return ("1. Какой у вас дом? посмотрите карту\n"
+                "2. Номер апартамента?\n"
+                "3. Ваш номер телефона?")
+
+
+def food_order_delivery_details_request_error(lang, state_data):
+    texts = {
+        'english': {
+            'house_name': 'What is your house name? Check the map.',
+            'apartment': 'What is your apartment number?',
+            'phone_number': 'What is your phone number?',
+            'error_text': 'Oops! Something was filled in incorrectly, please try again:'
+        },
+        'russian': {
+            'house_name': 'Какой у вас дом? посмотрите карту',
+            'apartment': 'Номер апартамента?',
+            'phone_number': 'Ваш номер телефона?',
+            'error_text': 'Ой! Похоже, что-то заполнено неверно. Пожалуйста, попробуйте снова:'
+        }
+    }
+
+    title = texts[lang]['error_text']
+    text = f"{title}\n\n"
+    n = 1
+    for key, value in state_data.items():
+        if key not in texts[lang]:
+            continue
+
+        key_text = value + ' ✅' if value != 'None' else texts[lang][key]
+        text += f"{n}. {key_text}\n"
+        n += 1
+
+    return text
+
+
+def food_order_delivery_details_confirmation_text(lang, state_data):
+    selected_items = state_data.get('selected_items')
+    order_type = state_data.get('order_type')
+    house_name = state_data.get('house_name')
+    apartment = state_data.get('apartment')
+    phone_number = state_data.get('phone_number')
+
+    texts = {
+        'english': {
+            'title': '📝 Your order',
+            'house_name': 'House name:',
+            'apartment': 'Apartment:',
+            'phone_number': 'Phone number:',
+            'delivery': 'Delivery',
+            'confirm': ('**Confirm your booking by replying with “yes” or “okay”**\n'
+                        f"To cancel the rental, type 'Cancel'")
+        },
+        'russian': {
+            'title': '📝 Ваш заказ',
+            'house_name': 'Дом:',
+            'apartment': 'Апартаменты:',
+            'phone_number': 'Номер телефона:',
+            'delivery': 'Доставка',
+            'confirm': ('**Подтвердите ваше бронирование, написав “да”/“ага”**\n'
+                        f"Для отмены аренды напишите 'отмена'")
+        }
+    }
+
+    order_text = get_order_text(selected_items, order_type, lang)
+    lang_texts = texts[lang]
+
+    text = (f"{lang_texts['title']}\n"
+            f"{order_text}\n\n"
+            f"**🛵 {lang_texts['delivery']}**\n"
+            f"1. {lang_texts['house_name']} {house_name}\n"
+            f"2. {lang_texts['apartment']} {apartment}\n"
+            f"3. {lang_texts['phone_number']} {phone_number}\n\n"
+            f"{lang_texts['confirm']}")
+
+    return text
+
+
 # ======== Food & Coffee =======
 
 
@@ -679,7 +821,9 @@ Please choose the type of massage and its duration.
 
 **Example:**  
 Therapeutic 2hrs  
-Relaxing 1hr"""
+Relaxing 1hr
+
+__To return to the menu, type 'menu' / 'cancel' / 'no'__"""
     else:
         text = """**💆Массаж**
 
@@ -696,7 +840,9 @@ Relaxing 1hr"""
 
 **Пример:**
 Лечебный 2 ч
-Расслабляющий 1"""
+Расслабляющий 1
+
+__Для возврата в меню напишите 'меню' / 'отмена' / 'нет'__"""
 
     return text
 
@@ -706,12 +852,14 @@ def massage_type_request_text(lang):
         return ("What date and time would you like to book?\n\n"
                 "**Example:**\n"
                 "January 4th, 12:00\n"
-                "January 8th at 10:00")
+                "January 8th at 10:00\n\n"
+                "__To return to the menu, type 'menu' / 'cancel' / 'no'__")
     else:
         return ("На какую дату и время вас записать?\n\n"
                 "**Пример:**\n"
                 "4 января, 12 00\n"
-                "8 января в 10")
+                "8 января в 10\n\n"
+                "__Для возврата в меню напишите 'меню' / 'отмена' / 'нет'__")
 
 
 def massage_booking_error(lang):
@@ -739,11 +887,11 @@ def massage_booking_confirmation_request_text(lang, dates, time, massage_type, d
 def massage_booking_confirmed_text(lang):
     if lang == "english":
         return (f"**🎉 Your booking is confirmed!**\n"
-                f"📍 Come to Loft 2, any entrance to the elevator, 2nd floor, #228\n"
+                f"📍 Come to Loft 2, any entrance to the elevator, 2nd floor, №239\n"
                 f"Please pay in cash (₾/$)")
     else:
         return (f"**🎉 Ваша запись подтверждена!**\n"
-                f"📍 Приходите Loft 2, любой вход к лифту, 2 этаж, №228\n"
+                f"📍 Приходите Loft 2, любой вход к лифту, 2 этаж, №239\n"
                 f"Пожалуйста, оплатите наличными (₾/$)")
 
 
@@ -756,6 +904,13 @@ def massage_booking_text(user, dates, time, massage_type, duration):
             f"📅 {dates} {time}\n"
             f"💆 {massage_type} {duration}")
 # ======== Massage =======
+
+
+# ======== Utils =======
+def has_invalid_items(selected_items):
+    selected_item_ids = [item['number'] for item in selected_items]
+    return any(_id not in food_coffee_dict['english'].keys() for _id in selected_item_ids)
+# ======== Utils =======
 
 
 # ======== Templates ========
@@ -798,19 +953,18 @@ food_coffee_dict = {
         6: {"name": "“Junior” Burger (beef) — **15₾**", "price": 15},
         7: {"name": "“KurCheese” Burger — **20₾**", "price": 20},
         8: {"name": "“BeefCheese” Burger (beef) — **25₾**", "price": 25},
-        9: {"name": "Spaghetti Carbonara — **15₾**", "price": 15},
-        10: {"name": "Chicken Wok — **15₾**", "price": 15},
-        11: {"name": "Vegetable Wok — **15₾**", "price": 15},
-        12: {"name": "Rice Wok with beef — **20₾**", "price": 20},
-        13: {"name": "Water 0.5 L — **2.5₾**", "price": 2.5},
+        9: {"name": "Vegetable Wok — **15₾**", "price": 15},
+        10: {"name": "Chicken Wok — **20₾**", "price": 20},
+        11: {"name": "Georgian with walnuts — **10₾**", "price": 10},
+        12: {"name": "Caesar with chicken — **15₾**", "price": 15},
+        13: {"name": "Water 0.7 L — **2.5₾**", "price": 2.5},
         14: {"name": "Cola 0.5 L — **5₾**", "price": 5},
-        15: {"name": "Quince juice 1 L — **10₾**", "price": 10},
-        16: {"name": "100% Grape juice 1 L — **15₾**", "price": 15},
-        17: {"name": "Freshly squeezed apple juice 0.5 L — **20₾**", "price": 20},
-        18: {"name": "Americano (350 ml) — **5₾**", "price": 5},
-        19: {"name": "Cappuccino (350 ml) — **7.5₾**", "price": 7.5},
-        20: {"name": "Latte (350 ml) — **10₾**", "price": 10},
-        21: {"name": "Glace (350 ml) — **10₾**", "price": 10},
+        15: {"name": "Quince juice 1L — **10₾**", "price": 10},
+        16: {"name": "Cherry juice 1L — 10₾", "price": 10},
+        17: {"name": "100% Apple juice 1L — 15₾", "price": 15},
+        18: {"name": "100% Grape juice 1L — **15₾**", "price": 15},
+        19: {"name": "Freshly squeezed pomegranate 0.5L — **20₾**", "price": 20},
+        20: {"name": "Freshly squeezed orange + mandarin 0.5L — **20₾**", "price": 20},
     },
     "russian": {
         1: {"name": "Сырники с сметаной (3 шт) — **10₾**", "price": 10},
@@ -821,19 +975,18 @@ food_coffee_dict = {
         6: {"name": "Бургер “Джуниор” (говяжий) — **15₾**", "price": 15},
         7: {"name": "Бургер “КурЧиз” — **20₾**", "price": 20},
         8: {"name": "Бургер “БифЧиз” (говяжий) — **25₾**", "price": 25},
-        9: {"name": "Спагетти Карбонара — **15₾**", "price": 15},
-        10: {"name": "Вок с курицей — **15₾**", "price": 15},
-        11: {"name": "Вок с овощами — **15₾**", "price": 15},
-        12: {"name": "Рис-вок с говядиной — **20₾**", "price": 20},
-        13: {"name": "Вода 0.5 л — **2.5₾**", "price": 2.5},
-        14: {"name": "Вода “Кола” 0.5 л — **5₾**", "price": 5},
-        15: {"name": "Сок айва 1 л — 10₾", "price": 10},
-        16: {"name": "Сок 100% виноград 1 л — **15₾**", "price": 15},
-        17: {"name": "Свежевыжатый сок яблоко 0.5 л — **20₾**", "price": 20},
-        18: {"name": "Американо (350 мл) — **5₾**", "price": 5},
-        19: {"name": "Капучино (350 мл) — **7.5₾**", "price": 7.5},
-        20: {"name": "Латте (350 мл) — **10₾**", "price": 10},
-        21: {"name": "Гляссе (350 мл) — **10₾**", "price": 10},
+        9: {"name": "Вок с овощами — **15₾**", "price": 15},
+        10: {"name": "Вок с курицей — **20₾**", "price": 20},
+        11: {"name": "Грузинский с грец. орехом — **10₾**", "price": 10},
+        12: {"name": "Цезарь с курицей — **15₾**", "price": 15},
+        13: {"name": "Вода 0.7л — **2.5₾**", "price": 2.5},
+        14: {"name": "“Кола” 0.5л — **5₾**", "price": 5},
+        15: {"name": "Сок айва 1л — **10₾**", "price": 10},
+        16: {"name": "Сок вишня 1л — 10₾", "price": 10},
+        17: {"name": "Сок 100% яблоко 1л — 15₾", "price": 15},
+        18: {"name": "Сок 100% виноград 1л — **15₾**", "price": 15},
+        19: {"name": "Свежевыжатый гранат 0.5л — **20₾**", "price": 20},
+        20: {"name": "Свежевыж. апельс.+мандарин 0.5л — **20₾**", "price": 20},
     }
 
 }

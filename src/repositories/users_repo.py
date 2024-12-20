@@ -88,8 +88,8 @@ class UsersRepository:
     def find_all_leads(self):
         return self.session.query(LeadUser).order_by(LeadUser.id.desc()).all()
 
-    def add_food_order(self, selected_items, total_price):
-        order = FoodOrder(total_price=total_price)
+    def add_food_order(self, selected_items, order_type, total_price):
+        order = FoodOrder(total_price=total_price, order_type=order_type)
         self.session.add(order)
         self.session.flush()
 
