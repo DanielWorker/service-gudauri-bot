@@ -789,7 +789,7 @@ def food_order_delivery_details_confirmation_text(lang, state_data):
     order_text = get_order_text(selected_items, order_type, lang)
     lang_texts = texts[lang]
 
-    text = (f"{lang_texts['title']}\n"
+    text = (f"**{lang_texts['title']}**\n"
             f"{order_text}\n\n"
             f"**🛵 {lang_texts['delivery']}**\n"
             f"1. {lang_texts['house_name']} {house_name}\n"

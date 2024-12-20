@@ -505,7 +505,7 @@ def detect_delivery_or_pickup(text):
 
 
 def extract_user_details_for_food_order(user_input):
-    phone_pattern = r"(\+?\d{1,3}[ -]?)?(\(?\d{1,5}\)?[ -]?)?[\d\s\-]{6,13}"
+    phone_pattern = r"\+?\d{1,3}[-\s]?\(?\d{1,5}\)?[-\s]?[\d\s\-]{6,13}"
 
     match = re.search(phone_pattern, user_input)
     phone_number = match.group(0).strip() if match else 'None'
