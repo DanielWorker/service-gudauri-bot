@@ -521,12 +521,13 @@ def instructor_booking_confirmed_text(lang):
 def food_order_info_text(lang):
     if lang == "english":
         text = """**🍔 Food by New-Gudauri**
+
 **🛍 Delivery within ~30-55 minutes**
 🆓 Free delivery for orders over 60₾ (lari), otherwise 10₾
 
 Make your selection, by number or letter:
 
-**🥞 Breakfast**
+**🥞 Breakfast**🕒 9.00 - 12.00 🕒
 **1.** Syrniki + sour cream (3 pcs) — **10₾**
 **2.** Pancakes + sour cream (3 pcs) — **10₾**
 **3.** Rice-milk porridge + jam — **10₾**
@@ -534,7 +535,7 @@ Make your selection, by number or letter:
 **🍴Main dishes**
 **4.** "FastTrack" sandwich (2 pcs) — **5₾**
 **5.** Borscht soup (beef) — **10₾**
-**6.** "Junior" burger (beef) — **15₾**
+**6.** Kebab (Chicken) — **15₾**
 **7.** "KurChiz" burger — **20₾**
 **8.** "BifChiz" burger (beef) — **25₾**
 **9.** Vegetable wok — **15₾**
@@ -558,12 +559,13 @@ Make your selection, by number or letter:
 4 5 8 11 15"""
     else:
         text = """**🍔 Еда по New-Gudauri**
+🕒 9.00 - 19.30 🕒
 **🛍 Доставка в течении ~30-55 минут**
 🆓 Бесплатно от 60₾(лари) иначе 10₾
 
 Сделайте свой выбор, цифрами или буквами:
 
-**🥞 Завтрак**
+**🥞 Завтрак**🕒 9.00 - 12.00 🕒
 **1.** Сырники + сметана (3 шт) — **10₾**
 **2.** Блинчики + сметана (3 шт) — **10₾**
 **3.** Каша рисо-молочная + варенье — **10₾**
@@ -571,7 +573,7 @@ Make your selection, by number or letter:
 **🍴Основные блюда**
 **4.** Сэндвич “ФастТрэк” (2 шт) — **5₾**
 **5.** Суп борщ (говядина) — **10₾**
-**6.** Бургер “Джуниор” (говяжий) — **15₾**
+**6.** Шаурма (куриная) — **15₾**
 **7.** Бургер “КурЧиз” — **20₾**
 **8.** Бургер “БифЧиз” (говяжий) — **25₾**
 **9.** Вок с овощами — **15₾**
@@ -601,13 +603,15 @@ def food_order_text(lang, selected_items, order_type):
     if lang == 'english':
         title = '📝 Your order'
         payment_info = ('**— You can still add more items to your order by writing below!**\n'
-                        '— To change the order type, write: "`pickup`"/"`delivery`"\n\n'
+                        '— Pickup temporary unavailable\n\n'
+                        # '— To change the order type, write: "`pickup`"/"`delivery`"\n\n'
                         '**Confirm your booking by replying with “yes” or “okay”**\n'
                         f"To cancel the rental, type 'Cancel'")
     else:
         title = '📝 Ваш заказ'
         payment_info = ('**— Вы все еще можете дополнить заказ написав ниже!**\n'
-                        '— Что бы изменить тип заказа напишите: "`самовывоз`"/"`доставка`"\n\n'
+                        '— Самовывоз временно недоступен\n\n'
+                        # '— Что бы изменить тип заказа напишите: "`самовывоз`"/"`доставка`"\n\n'
                         '**Подтвердите ваше бронирование, написав “да”/“ага”**\n'
                         f"Для отмены аренды напишите 'отмена'")
 
@@ -668,14 +672,14 @@ def food_order_confirmed_text(lang, order_num, order_type):
     if lang == 'english':
         delivery_text = '📍 **Loft 2**, any entrance to the elevator, 2nd floor, **№238**' if order_type == 'pickup' else ''
         text = (f'**🛍️ Your order ({order_num}) is being prepared**\n'
-                '⏳ In about **20-55 minutes** it will be ready for pickup!\n'
+                '⏳ In about **20-55 minutes** it will be ready for delivery!\n'
                 f'{delivery_text}\n'
                 '**The operator will contact you soon and confirm your order. Thank you!**\n'
                 '')
     else:
         delivery_text = '📍 **Loft 2**, любой вход к лифту, 2 этаж, **№238**' if order_type == 'pickup' else ''
         text = (f'**🛍️ Ваш заказ ({order_num}) готовится**\n'
-                '⏳ Примерно через **20-55 минут** он будет готов для самовывоза!\n'
+                '⏳ Примерно через **20-55 минут** он будет готов для доставки!\n'
                 f'{delivery_text}\n'
                 '**Оператор скоро свяжется с вами и подтвердит заказ, спасибо!**\n'
                 f"Пожалуйста, оплатите наличными (₾/$)")
@@ -950,7 +954,7 @@ food_coffee_dict = {
         3: {"name": "Rice-milk porridge + jam — **10₾**", "price": 10},
         4: {"name": "“FastTrack” Sandwich (2 pcs) — **5₾**", "price": 5},
         5: {"name": "Borscht soup (beef) — **10₾**", "price": 10},
-        6: {"name": "“Junior” Burger (beef) — **15₾**", "price": 15},
+        6: {"name": "Kebab (chicken) — **15₾**", "price": 15},
         7: {"name": "“KurCheese” Burger — **20₾**", "price": 20},
         8: {"name": "“BeefCheese” Burger (beef) — **25₾**", "price": 25},
         9: {"name": "Vegetable Wok — **15₾**", "price": 15},
@@ -972,7 +976,7 @@ food_coffee_dict = {
         3: {"name": "Каша рисо-молочная + варенье — **10₾**", "price": 10},
         4: {"name": "Сэндвич “ФастТрэк” (2 шт) — **5₾**", "price": 5},
         5: {"name": "Суп борщ (говядина) — **10₾**", "price": 10},
-        6: {"name": "Бургер “Джуниор” (говяжий) — **15₾**", "price": 15},
+        6: {"name": "Шаурма (куриная) — **15₾**", "price": 15},
         7: {"name": "Бургер “КурЧиз” — **20₾**", "price": 20},
         8: {"name": "Бургер “БифЧиз” (говяжий) — **25₾**", "price": 25},
         9: {"name": "Вок с овощами — **15₾**", "price": 15},

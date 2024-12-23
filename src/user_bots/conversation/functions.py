@@ -295,9 +295,9 @@ class ConversationService(TGObject):
             return await self.check_food_order_details()
 
         # Выбор типа заказа
-        order_type = api.detect_delivery_or_pickup(self.text)
-        if order_type != 'None':
-            user.state_data['order_type'] = order_type
+        # order_type = api.detect_delivery_or_pickup(self.text)
+        # if order_type != 'None':
+        #     user.state_data['order_type'] = order_type
 
         # Проверка выбран ли товар
         elif not selected_items and not user.state_data['selected_items']:
