@@ -24,20 +24,20 @@ class MainMenuCallback(CObject):
         return await execute_callback(self.callback, callback_functions)
 
     async def main_menu(self):
-        user = self.users_repo.find_user(self.user_id)
-        bots = self.users_repo.find_all_bots()
+        user = self.repo.find_user(self.user_id)
+        bots = self.repo.find_all_bots()
         text = tmp.main_menu_text(user, bots)
         buttons = kb.main_menu_btn()
         return await self.event.edit(text, buttons=buttons)
 
     async def bots_menu(self):
-        bots = self.users_repo.find_all_bots()
+        bots = self.repo.find_all_bots()
         text = tmp.bots_menu_text(bots)
         buttons = kb.bots_menu_btn(bots)
         return await self.event.edit(text, buttons=buttons)
 
     async def bot_menu(self, bot_id):
-        bot = self.users_repo.find_bot(bot_id=bot_id)
+        bot = self.repo.find_bot(bot_id=bot_id)
         client = session_manager.find_session(bot.phone_number)
 
         is_auth = False
@@ -51,20 +51,19 @@ class MainMenuCallback(CObject):
     async def add_bot_menu(self):
         await self.delete()
 
-        self.users_repo.update_user(self.user_id, state='phone_number_request')
+        self.repo.update_user(self.user_id, state='phone_number_request')
         text = tmp.add_bot_menu_text()
         buttons = kb.cancel_btn()
         return await self.respond(text, buttons=buttons)
 
     async def leads_menu(self):
-        leads = self.users_repo.find_all_leads()
+        leads = self.repo.find_all_leads()
         text = tmp.leads_menu_text()
         buttons = kb.leads_menu_btn(leads)
         return await self.event.edit(text, buttons=buttons)
 
     async def lead_menu(self, lead_id):
-        lead = self.users_repo.find_lead(id=lead_id)
-        lead_message = self.users_repo.find_lead_message(lead_id=lead_id)
-        text = tmp.lead_menu_text(lead, lead_message)
+        lead = self.repo.find_lead(id=lead_id)
+        text = tmp.lead_menu_text(lead)
         buttons = kb.lead_menu_btn()
         return await self.event.edit(text, buttons=buttons)

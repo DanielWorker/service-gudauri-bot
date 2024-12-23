@@ -1,6 +1,6 @@
 from telethon import TelegramClient
 
-from src.repositories.users_repo import UsersRepository
+from src.repositories.base import BaseRepository
 import src.settings as stg
 
 
@@ -29,7 +29,7 @@ class Base:
         )
         self.tg_client = None
         self.bot = stg.bot
-        self.users_repo = UsersRepository(session)
+        self.repo = BaseRepository(session)
         self.session = session
 
     async def tg_connect(self, phone_number):

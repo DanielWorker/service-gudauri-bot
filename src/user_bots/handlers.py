@@ -5,7 +5,7 @@ from telethon import events
 import src.settings as stg
 from src import api
 from src.database import session_maker
-from src.repositories.users_repo import UsersRepository
+from src.repositories.base import BaseRepository
 
 from src.user_bots.conversation.functions import ConversationService
 
@@ -21,16 +21,16 @@ async def message_handler(event):
 
     try:
         with session_maker() as session:
-            users_repo = UsersRepository(session)
+            repo = BaseRepository(session)
             user_id = event.sender_id if hasattr(event, 'sender_id') else event.user_id
 
             text = event.text if hasattr(event, 'text') else ''
             if not text:
                 return
 
-            user = users_repo.find_user(user_id)
+            user = repo.find_user(user_id)
             if not user:
-                users_repo.add_user(
+                repo.add_user(
                     user_id,
                     event.sender.first_name,
                     event.sender.last_name,

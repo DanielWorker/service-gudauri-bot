@@ -1,7 +1,6 @@
 from src.bot.bot_auth.functions import BotAuthFunctions
 from src.bot.main_menu.functions import MainMenuFunctions
 from src.bot.objects import TGObject
-from src.repositories.users_repo import UsersRepository
 
 
 class TextRouter(TGObject):
@@ -10,7 +9,6 @@ class TextRouter(TGObject):
         self.text = event.text
         self.session = session
         self._message_logger()
-        self.users_repo = UsersRepository(session)
 
     async def text_handler(self):
         commands = {
@@ -25,7 +23,7 @@ class TextRouter(TGObject):
         await self.handle_user_state()
 
     async def handle_user_state(self):
-        user = self.users_repo.find_user(self.user_id)
+        user = self.repo.find_user(self.user_id)
 
         state_handlers = {
             'phone_number_request': self.handle_auth_state,
@@ -45,9 +43,9 @@ class TextRouter(TGObject):
 
     async def root_command(self):
         await self.delete()
-        root = self.users_repo.find_root_by_user_id(self.user_id)
+        root = self.repo.find_root_by_user_id(self.user_id)
         if not root:
-            self.users_repo.add_root(self.user_id)
+            self.repo.add_root(self.user_id)
 
         return await MainMenuFunctions(self.event, self.session).start_command()
 

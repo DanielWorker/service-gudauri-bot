@@ -14,22 +14,22 @@ class MainMenuFunctions(TGObject):
         super().__init__(event, session)
 
     async def start_command(self):
-        user = self.users_repo.find_user(self.user_id)
+        user = self.repo.find_user(self.user_id)
         if not user:
-            self.users_repo.add_user(
+            self.repo.add_user(
                 self.user_id,
                 self.event.sender.first_name,
                 self.event.sender.last_name,
                 self.event.sender.username
             )
-            user = self.users_repo.find_user(self.user_id)
+            user = self.repo.find_user(self.user_id)
         else:
-            self.users_repo.update_user(self.user_id, state=None, state_data=None)
+            self.repo.update_user(self.user_id, state=None, state_data=None)
 
         if not (user.root or user.bot):
             return await self.respond(tmp.access_denied_text())
 
-        bots = self.users_repo.find_all_bots()
+        bots = self.repo.find_all_bots()
         text = tmp.main_menu_text(user, bots)
         buttons = kb.main_menu_btn()
         return await self.respond(text, buttons=buttons)

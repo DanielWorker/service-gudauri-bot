@@ -10,12 +10,12 @@ class ConversationService(TGObject):
         super().__init__(event, session)
 
     async def handle_message(self):
-        user = self.users_repo.find_user(self.user_id)
+        user = self.repo.find_user(self.user_id)
         if user.root:
             return
         elif not user.lead:
-            self.users_repo.add_lead(self.user_id)
-            self.users_repo.update_user(self.user_id, state='new_user')
+            self.repo.add_lead(self.user_id)
+            self.repo.update_user(self.user_id, state='new_user')
 
         state_functions = {
             'new_user': self.handle_new_user,
@@ -45,12 +45,12 @@ class ConversationService(TGObject):
     async def handle_new_user(self):
         detected_language = api.detect_input_language(self.text)
         if detected_language == 'undefined':
-            self.users_repo.update_user(self.user_id, state='language_request')
+            self.repo.update_user(self.user_id, state='language_request')
 
             text = tmp.select_language_text()
             await self.respond(text)
         else:
-            self.users_repo.update_lead(self.user_id, lang=detected_language)
+            self.repo.update_lead(self.user_id, lang=detected_language)
             return await self.all_services_menu()
 
     async def handle_language_request(self):
@@ -58,20 +58,20 @@ class ConversationService(TGObject):
         lang = response["language"]
 
         if lang != "undefined":
-            self.users_repo.update_lead(self.user_id, lang=lang)
+            self.repo.update_lead(self.user_id, lang=lang)
             return await self.all_services_menu()
         else:
             text = tmp.select_language_error()
             return await self.respond(text)
 
     async def all_services_menu(self):
-        self.users_repo.update_user(self.user_id, state='service_request', state_data=None)
-        lead = self.users_repo.find_lead(user_id=self.user_id)
+        self.repo.update_user(self.user_id, state='service_request', state_data=None)
+        lead = self.repo.find_lead(user_id=self.user_id)
         text = tmp.all_services_text(lead.lang)
         return await self.respond(text)
 
     async def handle_service_request(self):
-        user = self.users_repo.find_user(self.user_id)
+        user = self.repo.find_user(self.user_id)
         response = api.determine_service(self.text)
         service = response["service"]
 
@@ -89,13 +89,13 @@ class ConversationService(TGObject):
         return await service_handlers[service]()
 
     async def handle_rent_equipment_service(self):
-        self.users_repo.update_user(
+        self.repo.update_user(
             self.user_id,
             state='rent_equipment_info_request',
             state_data={'user_answers': []}
         )
 
-        user = self.users_repo.find_user(self.user_id)
+        user = self.repo.find_user(self.user_id)
         lang = user.lead.lang
         file_path = utils.get_path_to_asset('new_gudauri_map.png')
         first_text = tmp.rent_equipment_info_text(lang)
@@ -105,7 +105,7 @@ class ConversationService(TGObject):
         await self.respond(second_text)
 
     async def handle_rent_equipment_info_request(self):
-        user = self.users_repo.find_user(self.user_id)
+        user = self.repo.find_user(self.user_id)
         response = api.extract_rental_equipment_details(self.text)
         lang = user.lead.lang
 
@@ -122,7 +122,7 @@ class ConversationService(TGObject):
             return await self.respond(tmp.rent_equipment_error(lang))
 
         user.state_data['user_answers'].append(rental_equipment)
-        self.users_repo.update_user(
+        self.repo.update_user(
             self.user_id,
             state_data=user.state_data
         )
@@ -131,7 +131,7 @@ class ConversationService(TGObject):
         return await self.respond(text)
 
     async def rent_equipment_confirmation_request(self):
-        user = self.users_repo.find_user(self.user_id)
+        user = self.repo.find_user(self.user_id)
         response = api.analyze_answer_yes_no(self.text)
         answer = response['answer']
 
@@ -140,7 +140,7 @@ class ConversationService(TGObject):
             first_text = tmp.new_equipment_booking_text(user, user_answers)
             await stg.bot.send_message(stg.notification_box_chat_id, first_text)
 
-            file_path = utils.get_path_to_asset('parking.gif')
+            file_path = utils.get_path_to_asset('parking.mp4')
             second_text = tmp.equipment_booking_confirmed_text(user.lead.lang)
             await self.respond(second_text, file=file_path)
 
@@ -151,13 +151,13 @@ class ConversationService(TGObject):
             return await self.handle_rent_equipment_service()
 
     async def handle_instructor_service(self):
-        self.users_repo.update_user(
+        self.repo.update_user(
             self.user_id,
             state='hire_instructor_info_request',
             state_data={'dates': 'None', 'time': 'None', 'equipment': 'None', 'participants': 'None', 'age': 'None'}
         )
 
-        user = self.users_repo.find_user(self.user_id)
+        user = self.repo.find_user(self.user_id)
         lang = user.lead.lang
         first_text = tmp.hire_instructor_info_text(lang)
         await self.respond(first_text)
@@ -166,7 +166,7 @@ class ConversationService(TGObject):
         await self.respond(second_text)
 
     async def handle_hire_instructor_info_request(self):
-        user = self.users_repo.find_user(self.user_id)
+        user = self.repo.find_user(self.user_id)
         lang = user.lead.lang
         details = api.extract_mentor_booking_details(self.text)
 
@@ -179,7 +179,7 @@ class ConversationService(TGObject):
             if value != 'None' and value:
                 user.state_data[key] = details[key]
 
-        self.users_repo.update_user(
+        self.repo.update_user(
             self.user_id,
             state_data=user.state_data
         )
@@ -189,7 +189,7 @@ class ConversationService(TGObject):
             return await self.respond(text)
 
         user.state_data.update({'name': 'None', 'phone_number': 'None', 'place': 'None'})
-        self.users_repo.update_user(self.user_id, state_data=user.state_data, state='hire_instructor_personal_info_request')
+        self.repo.update_user(self.user_id, state_data=user.state_data, state='hire_instructor_personal_info_request')
 
         first_text = tmp.tracks_info_text(lang)
         file_path = utils.get_path_to_asset('tracks.png')
@@ -199,7 +199,7 @@ class ConversationService(TGObject):
         return await self.respond(second_text)
 
     async def hire_instructor_personal_info_request(self):
-        user = self.users_repo.find_user(self.user_id)
+        user = self.repo.find_user(self.user_id)
         personal_info = api.extract_user_details(self.text)
 
         if personal_info.get('is_request_canceled', False):
@@ -211,7 +211,7 @@ class ConversationService(TGObject):
             if value != 'None' and value:
                 user.state_data[key] = personal_info[key]
 
-        self.users_repo.update_user(
+        self.repo.update_user(
             self.user_id,
             state_data=user.state_data
         )
@@ -229,13 +229,13 @@ class ConversationService(TGObject):
             text = tmp.instructor_booking_user_data_request_error(user.lead.lang, user.state_data)
             return await self.respond(text)
 
-        self.users_repo.update_user(self.user_id, state='hire_instructor_confirmation_request')
+        self.repo.update_user(self.user_id, state='hire_instructor_confirmation_request')
 
         text = tmp.instructor_booking_confirmation_text(user.lead.lang, dates, time, equipment, participants, age, name, phone_number, place)
         return await self.respond(text)
 
     async def hire_instructor_confirmation_request(self):
-        user = self.users_repo.find_user(self.user_id)
+        user = self.repo.find_user(self.user_id)
         response = api.analyze_answer_yes_no(self.text)
         answer = response['answer']
 
@@ -264,19 +264,19 @@ class ConversationService(TGObject):
             return await self.handle_hire_instructor_info_request()
 
     async def handle_food_coffee_service(self):
-        self.users_repo.update_user(
+        self.repo.update_user(
             self.user_id,
             state='food_order_info_request',
             state_data={"selected_items": [], 'order_type': 'delivery', 'house_name': 'None', 'apartment': 'None', 'phone_number': 'None'}
         )
 
-        user = self.users_repo.find_user(self.user_id)
+        user = self.repo.find_user(self.user_id)
         lang = user.lead.lang
         text = tmp.food_order_info_text(lang)
         await self.respond(text)
 
     async def handle_food_order_info_request(self):
-        user = self.users_repo.find_user(self.user_id)
+        user = self.repo.find_user(self.user_id)
         lang = user.lead.lang
 
         order_details = api.extract_food_order_details(self.text)
@@ -310,7 +310,7 @@ class ConversationService(TGObject):
         else:
             user.state_data['selected_items'].extend(selected_items)
 
-        self.users_repo.update_user(
+        self.repo.update_user(
             self.user_id,
             state_data=user.state_data
         )
@@ -318,25 +318,25 @@ class ConversationService(TGObject):
         return await self.send_food_order_message()
 
     async def send_food_order_message(self):
-        self.users_repo.update_user(self.user_id, state='food_order_info_request')
-        user = self.users_repo.find_user(self.user_id)
+        self.repo.update_user(self.user_id, state='food_order_info_request')
+        user = self.repo.find_user(self.user_id)
         text = tmp.food_order_text(user.lead.lang, user.state_data['selected_items'], user.state_data['order_type'])
         return await self.respond(text)
 
     async def check_food_order_details(self):
-        user = self.users_repo.find_user(self.user_id)
+        user = self.repo.find_user(self.user_id)
         order_type = user.state_data['order_type']
 
         if order_type == 'delivery':
             text = tmp.food_order_delivery_details_text(user.lead.lang)
             await self.respond(text)
-            self.users_repo.update_user(self.user_id, state='food_order_delivery_details_request')
+            self.repo.update_user(self.user_id, state='food_order_delivery_details_request')
 
         else:
             return await self.handle_food_order_confirmation_request()
 
     async def handle_food_order_delivery_details_request(self):
-        user = self.users_repo.find_user(self.user_id)
+        user = self.repo.find_user(self.user_id)
         lang = user.lead.lang
         details = api.extract_user_details_for_food_order(self.text)
 
@@ -349,7 +349,7 @@ class ConversationService(TGObject):
             if value != 'None' and value:
                 user.state_data[key] = details[key]
 
-        self.users_repo.update_user(
+        self.repo.update_user(
             self.user_id,
             state_data=user.state_data
         )
@@ -358,12 +358,12 @@ class ConversationService(TGObject):
             text = tmp.food_order_delivery_details_request_error(lang, user.state_data)
             return await self.respond(text)
 
-        self.users_repo.update_user(self.user_id, state='food_order_confirmation_request')
+        self.repo.update_user(self.user_id, state='food_order_confirmation_request')
         text = tmp.food_order_delivery_details_confirmation_text(user.lead.lang, user.state_data)
         await self.respond(text)
 
     async def handle_food_order_confirmation_request(self):
-        user = self.users_repo.find_user(self.user_id)
+        user = self.repo.find_user(self.user_id)
         response = api.analyze_answer_yes_no(self.text)
         answer = response['answer']
 
@@ -371,7 +371,7 @@ class ConversationService(TGObject):
             selected_items = user.state_data.get('selected_items')
             order_type = user.state_data.get('order_type')
             total_price = tmp.calculate_total_price(selected_items)
-            food_order = self.users_repo.add_food_order(selected_items, order_type, total_price)
+            food_order = self.repo.add_food_order(selected_items, order_type, total_price)
 
             if order_type == 'delivery':
                 delivery_details = {**user.state_data}
@@ -392,19 +392,19 @@ class ConversationService(TGObject):
             return await self.handle_food_coffee_service()
 
     async def handle_massage_service(self):
-        self.users_repo.update_user(
+        self.repo.update_user(
             self.user_id,
             state='massage_type_info_request',
             state_data=None,
         )
 
-        user = self.users_repo.find_user(self.user_id)
+        user = self.repo.find_user(self.user_id)
         lang = user.lead.lang
         text = tmp.massage_service_info_text(lang)
         await self.respond(text)
 
     async def handle_massage_type_info_request(self):
-        user = self.users_repo.find_user(self.user_id)
+        user = self.repo.find_user(self.user_id)
         response = api.extract_massage_details(self.text)
         lang = user.lead.lang
 
@@ -417,7 +417,7 @@ class ConversationService(TGObject):
             return await self.respond(tmp.massage_booking_error(lang))
 
         user.state_data = response
-        self.users_repo.update_user(
+        self.repo.update_user(
             self.user_id,
             state='massage_date_info_request',
             state_data=user.state_data
@@ -427,7 +427,7 @@ class ConversationService(TGObject):
         return await self.respond(text)
 
     async def handle_massage_date_info_request(self):
-        user = self.users_repo.find_user(self.user_id)
+        user = self.repo.find_user(self.user_id)
         response = api.extract_booking_details_for_massage(self.text)
         lang = user.lead.lang
 
@@ -440,7 +440,7 @@ class ConversationService(TGObject):
             return await self.respond(tmp.massage_booking_error(lang))
 
         user.state_data.update(response)
-        self.users_repo.update_user(
+        self.repo.update_user(
             self.user_id,
             state='massage_booking_confirmation_request',
             state_data=user.state_data
@@ -455,7 +455,7 @@ class ConversationService(TGObject):
         return await self.respond(text)
 
     async def handle_massage_booking_confirmation_request(self):
-        user = self.users_repo.find_user(self.user_id)
+        user = self.repo.find_user(self.user_id)
         lang = user.lead.lang
         response = api.analyze_answer_yes_no(self.text)
         answer = response['answer']

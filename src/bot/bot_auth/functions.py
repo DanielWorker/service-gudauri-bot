@@ -14,7 +14,7 @@ class BotAuthFunctions(TGObject):
         super().__init__(event, session)
 
     async def new_bot_filling(self):
-        user = self.users_repo.find_user(self.user_id)
+        user = self.repo.find_user(self.user_id)
 
         if user.state == 'phone_number_request':
             return await self.phone_number_request()
@@ -59,7 +59,7 @@ class BotAuthFunctions(TGObject):
             await self.send_code(phone_number)
 
         except SessionPasswordNeededError:
-            self.users_repo.update_user(self.user_id, state='two_factor_auth_request')
+            self.repo.update_user(self.user_id, state='two_factor_auth_request')
             text = 'Введите пароль двух-факторной аутентификации'
             await self.respond(text)
 
@@ -104,7 +104,7 @@ class BotAuthFunctions(TGObject):
                 'phone_number': phone_number,
                 'phone_code_hash': sent_code.phone_code_hash
             }
-            self.users_repo.update_user(self.user_id, state='auth_code_request', state_data=state_data)
+            self.repo.update_user(self.user_id, state='auth_code_request', state_data=state_data)
 
         return state_data
 
@@ -117,16 +117,16 @@ class BotAuthFunctions(TGObject):
 
         user_id = bot_user.id
 
-        user = self.users_repo.find_user(user_id)
+        user = self.repo.find_user(user_id)
         if not user:
-            self.users_repo.add_user(bot_user.id, bot_user.first_name, bot_user.last_name, bot_user.username)
+            self.repo.add_user(bot_user.id, bot_user.first_name, bot_user.last_name, bot_user.username)
 
         if not user.bot:
-            self.users_repo.add_bot(user_id, phone_number)
+            self.repo.add_bot(user_id, phone_number)
 
         await session_manager.handle_new_session(phone_number)
         stg.logger.info(f'Bot {bot_user.id} logged in')
 
-        self.users_repo.update_user(self.user_id, state=None, state_data=None)
+        self.repo.update_user(self.user_id, state=None, state_data=None)
         await self.respond('🎉 Вы успешно авторизовались!')
         return await MainMenuFunctions(self.event, self.session).start_command()
