@@ -1,4 +1,4 @@
-from sqlalchemy import String, Integer, ForeignKey, JSON, BigInteger, UniqueConstraint, Float
+from sqlalchemy import String, Integer, ForeignKey, JSON, BigInteger, UniqueConstraint, Float, DateTime
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import datetime, time
@@ -153,3 +153,21 @@ class FoodOrderItem(Base):
             "product_number": self.product_number,
             "quantity": self.quantity,
         }
+
+
+class MassageBooking(Base):
+    __tablename__ = "massage_bookings"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.user_id"))
+    due_date: Mapped[datetime] = mapped_column(DateTime)
+    massage_type: Mapped[str] = mapped_column(String)
+    duration: Mapped[float] = mapped_column(Float)
+
+    user: Mapped["User"] = relationship()
+
+    def __str__(self):
+        return f"{self.__class__.__name__}(id={self.id}, user_id={self.user_id}, due_date={self.due_date}, massage_type={self.massage_type}, duration={self.duration})"
+
+    def __repr__(self):
+        return str(self)

@@ -1,5 +1,6 @@
 from src.bot.bot_auth.functions import BotAuthFunctions
 from src.bot.main_menu.functions import MainMenuFunctions
+from src.bot.massage_service.functions import MassageServiceFunctions
 from src.bot.objects import TGObject
 
 
@@ -14,7 +15,9 @@ class TextRouter(TGObject):
         commands = {
             '/start': self.start_command,
             '/root': self.root_command,
-            '⭕️ Отмена': self.start_command
+            '⭕️ Отмена': self.start_command,
+            'календарь': self.massage_calendar_command,
+            'кк': self.massage_calendar_command
         }
 
         if self.text in commands:
@@ -48,6 +51,10 @@ class TextRouter(TGObject):
             self.repo.add_root(self.user_id)
 
         return await MainMenuFunctions(self.event, self.session).start_command()
+
+    async def massage_calendar_command(self):
+        await self.delete()
+        return await MassageServiceFunctions(self.event, self.session).send_calendar_menu()
 
     def _message_logger(self):
         text = f'——————————————————\n' \
