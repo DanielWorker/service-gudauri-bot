@@ -1,6 +1,7 @@
 from telethon.errors import MessageIdInvalidError, MessageTooLongError, MessageNotModifiedError
 
 from src.bot.main_menu.callbacks import MainMenuCallback
+from src.bot.massage_service.callback import MassageServiceCallback
 from src.database import session_maker
 from src.settings import logger
 
@@ -12,6 +13,7 @@ class CallbackRouter:
         self._callback_logger()
         self.callback_mapping = {
             'mm/': MainMenuCallback,
+            'ms/': MassageServiceCallback,
         }
 
     async def route_callback(self):

@@ -1,6 +1,6 @@
 from telethon.utils import resolve_id
 
-from src.bot import utils
+from src import utils
 import src.settings as stg
 
 

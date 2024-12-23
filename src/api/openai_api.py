@@ -222,7 +222,6 @@ def extract_rental_equipment_details(user_input):
     result = response.choices[0].message.content
     return json.loads(result)
 
-
 def extract_mentor_booking_details(user_input):
     response = client.chat.completions.create(
         model="gpt-4o-mini",
@@ -621,15 +620,17 @@ def extract_booking_details_for_massage(user_input):
                     "1. На какие даты вас записать? "
                     "2. Время начала занятия? "
                     "Твоя задача: проанализировать текст и извлечь ответы на каждый из вопросов. "
-                    "Верни JSON-объект с ключами: 'dates' и 'time'. "
+                    "Верни JSON-объект с ключами: 'date' и 'time'. "
                     "Примеры ввода: "
                     "- 8 января\n10 10 "
                     "- 4 января\n12 30 "
+                    "- 4.01\n12 30 "
                     "- 4 января, 12 00 "
                     "- 8 января в 10 "
+                    "- 8.12 10.00 "
                     "Примечания: "
-                    "1. 'dates' должен содержать текст даты или 'None', если даты нет. "
-                    "2. 'time' должен содержать время в формате HH MM, если оно указано, иначе 'None'."
+                    "1. 'date' должен содержать дату в формате DD/MM или 'None', если дата не указана. "
+                    "2. 'time' должен содержать время в формате HH:MM или 'None', если не указано."
                 )
             },
             {
@@ -644,17 +645,16 @@ def extract_booking_details_for_massage(user_input):
                 "schema": {
                     "type": "object",
                     "properties": {
-                        "dates": {
-                            "description": "Текст даты или 'None', если дата не указана.",
+                        "date": {
+                            "description": "Дата в формате DD/MM или 'None', если дата не указана.",
                             "type": ["string", "null"]
                         },
                         "time": {
-                            "description": "Время в формате HH MM или 'None', если не указано.",
+                            "description": "Время в формате HH:MM или 'None', если не указано.",
                             "type": ["string", "null"]
-                        },
-                        **default_properties
+                        }
                     },
-                    "required": ["dates", "time"],
+                    "required": ["date", "time"],
                     "additionalProperties": False
                 }
             }
@@ -663,7 +663,6 @@ def extract_booking_details_for_massage(user_input):
 
     result = response.choices[0].message.content
     return json.loads(result)
-
 
 def extract_massage_details(user_input):
     response = client.chat.completions.create(
@@ -674,17 +673,19 @@ def extract_massage_details(user_input):
                 "content": (
                     "You are an assistant that extracts massage details from user input. "
                     "The user can choose from the following types of massage: "
-                    "1. Расслабляющий 1ч/1.5ч 99/138 GEL "
-                    "2. Классический 1ч/1.5ч 110/150 GEL "
-                    "3. Спортивный 1ч/1.5ч 120/169 GEL "
-                    "4. Лечебный 1.5ч/2ч 195/245 GEL "
-                    "5. Балийский массаж 1ч/1.5ч 120/169 GEL "
-                    "6. Антицеллюлитный 1ч/1.5ч 110/150 GEL "
-                    "7. Голова + лицо 1ч/1.5ч 110/150 GEL "
+                    "1. Расслабляющий 1ч/1.5ч "
+                    "2. Классический 1ч/1.5ч "
+                    "3. Спортивный 1ч/1.5ч "
+                    "4. Лечебный 1.5ч/2ч "
+                    "5. Балийский массаж 1ч/1.5ч "
+                    "6. Антицеллюлитный 1ч/1.5ч "
+                    "7. Спина + ноги 1ч/1.5ч. "
                     "You will analyze the input and return a JSON object with the keys 'massage_type' and 'duration'. "
-                    "The 'massage_type' should be one of the available types, or 'None' if it's not specified correctly. "
-                    "The 'duration' should be one of the available durations (1h or 1.5h or 2h), or 'None' if not specified. "
-                    "Example input: 'Лечебный 2ч' or 'Расслабляющий 1'."
+                    "The 'massage_type' should be one of the available types: "
+                    "['relaxing', 'classic', 'sports', 'therapeutic_session', 'balinese', 'anti_cellulite', 'back_and_legs'], "
+                    "or 'undefined' if it's not specified correctly. "
+                    "The 'duration' should be one of the available durations (1, 1.5, or 2), or 'None' if not specified. "
+                    "Example input: 'Лечебный 2ч', 'Расслабляющий 1', 'Anti Cellulite\n1h', 'Back and legs\n1'."
                 )
             },
             {
@@ -700,12 +701,14 @@ def extract_massage_details(user_input):
                     "type": "object",
                     "properties": {
                         "massage_type": {
-                            "description": "The type of massage requested by the user, or 'None' if not provided correctly.",
-                            "type": ["string", "null"]
+                            "description": "The type of massage requested by the user, or 'undefined' if not provided.",
+                            "type": "string",
+                            "enum": ["relaxing", "classic", "sports", "therapeutic_session", "balinese", "anti_cellulite", "back_and_legs", "undefined"]
                         },
                         "duration": {
                             "description": "The duration of the massage requested (1h or 1.5h or 2h), or 'None' if not provided.",
-                            "type": ["string", "null"]
+                            "type": "number",
+                            "enum": [1, 1.5, 2]
                         },
                         **default_properties
                     },
@@ -726,6 +729,11 @@ default_properties = {
         "type": "boolean"
     },
 }
+
+# x = extract_massage_details('Расслабляющий 1ч')
+# x = extract_booking_details_for_massage('35.01 12 00')
+x = extract_rental_equipment_details('1 2 3')
+print(x)
 
 # x = detect_delivery_or_pickup('1 2 3 4')
 # print(extract_mentor_booking_details('2 взрослых 4 января 12.30 Сноуборд, 10-20 лет'))

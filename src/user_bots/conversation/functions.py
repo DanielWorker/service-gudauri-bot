@@ -1,4 +1,6 @@
-from src.bot import utils
+from datetime import timedelta
+
+from src import utils
 from src.bot.objects import TGObject
 from src.user_bots.conversation import templates as tmp
 from src.api import openai_api as api
@@ -439,6 +441,23 @@ class ConversationService(TGObject):
         if 'None' in response.values():
             return await self.respond(tmp.massage_booking_error(lang))
 
+        date = response.get('date')
+        time = response.get('time')
+        massage_type = user.state_data.get('massage_type')
+        duration = user.state_data.get('duration')
+
+        try:
+            due_date = utils.combine_and_localize_datetime(date, time)
+        except ValueError:
+            return await self.respond(tmp.massage_booking_error(lang))
+
+        if not (9 <= due_date.hour < 20):
+            return await self.respond(tmp.invalid_booking_time_error(lang))
+
+        utc_dt = utils.convert_time_to_utc(due_date)
+        if not self.repo.is_massage_booking_time_available(utc_dt, duration):
+            return await self.respond(tmp.unavailable_time_error(lang))
+
         user.state_data.update(response)
         self.repo.update_user(
             self.user_id,
@@ -446,12 +465,7 @@ class ConversationService(TGObject):
             state_data=user.state_data
         )
 
-        dates = user.state_data.get('dates')
-        time = user.state_data.get('time')
-        massage_type = user.state_data.get('massage_type')
-        duration = user.state_data.get('duration')
-
-        text = tmp.massage_booking_confirmation_request_text(lang, dates, time, massage_type, duration)
+        text = tmp.massage_booking_confirmation_request_text(lang, date, time, massage_type, duration)
         return await self.respond(text)
 
     async def handle_massage_booking_confirmation_request(self):
@@ -464,12 +478,16 @@ class ConversationService(TGObject):
             return await self.handle_massage_service()
 
         if answer:
-            dates = user.state_data.get('dates')
+            date = user.state_data.get('date')
             time = user.state_data.get('time')
             massage_type = user.state_data.get('massage_type')
             duration = user.state_data.get('duration')
 
-            first_text = tmp.massage_booking_text(user, dates, time, massage_type, duration)
+            due_date = utils.combine_and_localize_datetime(date, time)
+            utc_dt = utils.convert_time_to_utc(due_date)
+            self.repo.add_massage_booking(self.user_id, utc_dt, massage_type, duration)
+
+            first_text = tmp.massage_booking_text(user, date, time, massage_type, duration)
             await stg.bot.send_message(stg.massage_chat_id, first_text)
 
             file_path = utils.get_path_to_asset('new_gudauri_map.png')

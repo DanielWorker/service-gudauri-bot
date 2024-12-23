@@ -1,9 +1,6 @@
-from datetime import datetime, timedelta
-
 from telethon import events
 
 import src.settings as stg
-from src import api
 from src.database import session_maker
 from src.repositories.base import BaseRepository
 
@@ -23,10 +20,6 @@ async def message_handler(event):
         with session_maker() as session:
             repo = BaseRepository(session)
             user_id = event.sender_id if hasattr(event, 'sender_id') else event.user_id
-
-            text = event.text if hasattr(event, 'text') else ''
-            if not text:
-                return
 
             user = repo.find_user(user_id)
             if not user:

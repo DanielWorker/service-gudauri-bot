@@ -1,4 +1,4 @@
-from src.bot import utils
+from src import utils
 
 
 def select_language_text():
@@ -69,18 +69,18 @@ def rent_equipment_info_text(lang):
 7 or more consecutive days: **35₾/day** per set
 
 **🎿 Set includes:**
-• Skis, poles, boots, helmet
-• Snowboard, boots, helmet
-• Jacket, pants, goggles
+1. Skis, poles, boots, helmet
+2. Snowboard, boots, helmet
+3. Jacket, pants, goggles
 
 **Additional items:**
-• Skis + poles / snowboard: **39₾/day**
-• Goggles: **10₾/day**
-• Helmet: **10₾/day**
-• Gloves: **10₾/day**
-• Protective shorts: **10₾/day**
-• Jacket: **20₾/day**
-• Pants: **20₾/day**"""
+4. Skis + poles / snowboard: **39₾/day**
+5. Goggles: **10₾/day**
+6. Helmet: **10₾/day**
+7. Gloves: **10₾/day**
+8. Protective shorts: **10₾/day**
+9. Jacket: **20₾/day**
+10. Pants: **20₾/day**"""
     else:
         return """
 **🏂 Прокат @AllServiceGudauri**
@@ -90,18 +90,18 @@ def rent_equipment_info_text(lang):
 От 7 дней подряд: **35₾/сутки** комплект
 
 **🎿 Комплект включает:**
-• Лыжи, палки, ботинки, шлем
-• Сноуборд, ботинки, шлем
-• Куртка, штаны, маска
+1. Лыжи, палки, ботинки, шлем
+2. Сноуборд, ботинки, шлем
+3. Куртка, штаны, маска
 
 **🧩 Дополнительные предметы:**
-• Лыжи + палки / сноуборд: **39₾/1 сутки**
-• Маска: **10₾/сутки**
-• Шлем: **10₾/сутки**
-• Перчатки: **10₾/сутки**
-• Защитные шорты: **10₾/сутки**
-• Куртка: **20₾/сутки**
-• Штаны: **20₾/сутки**"""
+4. Лыжи + палки / сноуборд: **39₾/1 сутки**
+5. Маска: **10₾/сутки**
+6. Шлем: **10₾/сутки**
+7. Перчатки: **10₾/сутки**
+8. Защитные шорты: **10₾/сутки**
+9. Куртка: **20₾/сутки**
+10. Штаны: **20₾/сутки**"""
 
 
 def rent_equipment_questions_text(lang):
@@ -158,16 +158,18 @@ def equipment_booking_confirmed_text(lang):
 
     if lang == "english":
         return ("**🎉 Your equipment booking is confirmed!**\n"
-                "📍 New Gudauri, `42.469758, 44.491701` (click to copy)\n"
+                "📍 New Gudauri, `42.469758, 44.491701`\n"
                 f"Underground parking, under the outdoor pool ({link})\n"
+                f"Behind the Gudauri Casino building (La suite)\n"
                 "We will be waiting for you!\n"
-                "Please pay in cash (₾/$).")
+                "**Please pay in cash (₾/$).**")
     else:
         return ("**🎉 Ваша бронирование снаряжения подтверждено!**\n"
-                "📍 Нью-Гудаури, `42.469758, 44.491701` (нажмите что бы скопировать)\n"
+                "📍 Нью-Гудаури, `42.469758, 44.491701`\n"
                 f"Подземная парковка, под открытым бассейном ({link})\n"
+                f"За зданием Gudauri Casino (La suite)\n"
                 "Будем ждать вас!\n"
-                "Пожалуйста, оплатите наличными (₾/$).")
+                "**Пожалуйста, оплатите наличными (₾/$).**")
 # ======== Rent Equipment ========
 
 
@@ -469,7 +471,7 @@ def instructor_booking_confirmation_text(lang, dates, time, equipment, participa
         return (
             f"**Confirm your booking by replying with 'yes'/'ok'**\n"
             f"After that, we will connect you with an instructor.\n"
-            f"To cancel the rental, type 'cancel'.\n\n"
+            f"To cancel the booking, type 'cancel'.\n\n"
             f"📅 {dates} | {time}\n"
             f"👥 {participants} | {age}\n"
             f"🎿 {equipment}\n\n"
@@ -481,7 +483,7 @@ def instructor_booking_confirmation_text(lang, dates, time, equipment, participa
         return (
             f"**Подтвердите вашу запись, написав “да”/“ага”**\n"
             f"После этого мы свяжем вас с инструктором\n"
-            f"Для отмены аренды напишите 'отмена'\n\n"
+            f"Для отмены бронирования напишите 'отмена'\n\n"
             f"📅 {dates} | {time}\n"
             f"👥 {participants} | {age}\n"
             f"🎿 {equipment}\n\n"
@@ -606,14 +608,14 @@ def food_order_text(lang, selected_items, order_type):
                         '— Pickup temporary unavailable\n\n'
                         # '— To change the order type, write: "`pickup`"/"`delivery`"\n\n'
                         '**Confirm your booking by replying with “yes” or “okay”**\n'
-                        f"To cancel the rental, type 'Cancel'")
+                        f"To cancel the order, type 'Cancel'")
     else:
         title = '📝 Ваш заказ'
         payment_info = ('**— Вы все еще можете дополнить заказ написав ниже!**\n'
                         '— Самовывоз временно недоступен\n\n'
                         # '— Что бы изменить тип заказа напишите: "`самовывоз`"/"`доставка`"\n\n'
                         '**Подтвердите ваше бронирование, написав “да”/“ага”**\n'
-                        f"Для отмены аренды напишите 'отмена'")
+                        f"Для отмены заказа напишите 'отмена'")
 
     order_text = get_order_text(selected_items, order_type, lang)
     text = (f"**{title}:**\n"
@@ -777,7 +779,7 @@ def food_order_delivery_details_confirmation_text(lang, state_data):
             'phone_number': 'Phone number:',
             'delivery': 'Delivery',
             'confirm': ('**Confirm your booking by replying with “yes” or “okay”**\n'
-                        f"To cancel the rental, type 'Cancel'")
+                        f"To cancel the order, type 'Cancel'")
         },
         'russian': {
             'title': '📝 Ваш заказ',
@@ -786,7 +788,7 @@ def food_order_delivery_details_confirmation_text(lang, state_data):
             'phone_number': 'Номер телефона:',
             'delivery': 'Доставка',
             'confirm': ('**Подтвердите ваше бронирование, написав “да”/“ага”**\n'
-                        f"Для отмены аренды напишите 'отмена'")
+                        f"Для отмены заказа напишите 'отмена'")
         }
     }
 
@@ -813,38 +815,40 @@ def massage_service_info_text(lang):
         text = """**💆 Massage**
 
 🕒 9:00 AM - 9:00 PM 🕒  
-**1.** Relaxing Massage  1hr/1.5hrs  99₾/138 GEL  
-**2.** Classic Massage   1hr/1.5hrs  110₾/150₾  
-**3.** Sports Massage    1hr/1.5hrs  120₾/169₾  
-**4.** Therapeutic Session 1.5hrs/2hrs 195₾/245₾  
-**5.** Balinese Massage  1hr/1.5hrs  120₾/169₾  
-**6.** Anti-cellulite Massage 1hr/1.5hrs 110₾/150₾  
-**7.** Head + Face Massage 1hr/1.5hrs 110₾/150₾
+**1.** Relaxing  ⏰ 1h — 99₾ / 1.5h — 138₾  
+**2.** Classic    ⏰ 1h — 110₾ / 1.5h — 150₾  
+**3.** Sports    ⏰ 1h — 120₾ / 1.5h — 169₾  
+**4.** Therapeutic Session ⏰ 1.5h — 195₾ / 2h — 249₾  
+**5.** Balinese  ⏰ 1h — 120₾ / 1.5h —  169₾  
+**6.** Anti-cellulite ⏰ 1h — 110₾ / 1.5h — 150₾
+**7.** Back + legs ⏰ 1h — 110₾ / 1.5h — 150₾
 
-Please choose the type of massage and its duration.
+1. What type of massage will it be?
+2. Duration?
 
-**Example:**  
-Therapeutic 2hrs  
-Relaxing 1hr
+**Example:**
+Classic
+1.5 hours
 
 __To return to the menu, type 'menu' / 'cancel' / 'no'__"""
     else:
         text = """**💆Массаж**
 
-🕒 9.00 - 21.00 🕒
-**1.** Расслабляющий  1ч/1.5ч  99/138 лари 
-**2.** Классический     1ч/1.5ч 110/150₾
-**3.** Спортивный       1ч/1.5ч 120/169₾
-**4.** Лечебный сеанс   1.5ч/2ч 195/245₾
-**5.** Балийский массаж 1ч/1.5ч 120/169₾
-**6.** Антицеллюлитный  1ч/1.5ч 110/150₾
-**7.** Голова + лицо    1ч/1.5ч 110/150₾
+🕒 9.00 - 20.00 🕒
+1. Расслабляющий    1 час ⏰ 99₾ / 1.5⏰  138₾
+2. Классический         1 час ⏰ 110₾ / 1.5⏰  150₾
+3. Спортивный            1 час ⏰ 120₾ / 1.5⏰  169₾
+4. Лечебный сеанс     1.5     ⏰ 195₾ / 2 ⏰  249₾
+5. Балийский                1 час ⏰ 120₾ / 1.5⏰  169₾
+6. Антицеллюлитный 1 час ⏰ 110₾ / 1.5⏰  150₾
+7. Спина + ноги            1 час ⏰ 110₾ / 1.5⏰  150₾
 
-Выберите, какой будет вид массажа и длительность 
+1. Какой будет вид массажа?
+2. Длительность?
 
 **Пример:**
-Лечебный 2 ч
-Расслабляющий 1
+Классический
+1.5 часа
 
 __Для возврата в меню напишите 'меню' / 'отмена' / 'нет'__"""
 
@@ -853,16 +857,18 @@ __Для возврата в меню напишите 'меню' / 'отмен�
 
 def massage_type_request_text(lang):
     if lang == "english":
-        return ("What date and time would you like to book?\n\n"
+        return ("1. Choose a date?\n"
+                "2. Time?\n\n"
                 "**Example:**\n"
-                "January 4th, 12:00\n"
-                "January 8th at 10:00\n\n"
+                "January 4\n"
+                "11 00\n\n"
                 "__To return to the menu, type 'menu' / 'cancel' / 'no'__")
     else:
-        return ("На какую дату и время вас записать?\n\n"
+        return ("1. Выберите дату?\n"
+                "2. Время?\n\n"
                 "**Пример:**\n"
-                "4 января, 12 00\n"
-                "8 января в 10\n\n"
+                "4 января\n"
+                "11 00\n\n"
                 "__Для возврата в меню напишите 'меню' / 'отмена' / 'нет'__")
 
 
@@ -873,19 +879,21 @@ def massage_booking_error(lang):
         return 'Ой! Похоже, что-то заполнено неверно. Пожалуйста, попробуйте снова'
 
 
-def massage_booking_confirmation_request_text(lang, dates, time, massage_type, duration):
+def massage_booking_confirmation_request_text(lang, date, time, massage_type, duration):
+    date_str = utils.convert_date_to_str(date)
+    massage_str = massage_dict[lang][massage_type]
     if lang == "english":
         return (f"**Confirm your booking by replying 'yes'/'ok'**\n"
                 f"After that, we will connect you with an operator\n"
                 "To cancel your booking, type 'cancel'.\n\n"
-                f"📅 {dates} {time}\n"
-                f"💆 {massage_type} {duration}")
+                f"📅 {date_str} {time}\n"
+                f"💆 {massage_str} {duration}h")
     else:
         return (f"**Подтвердите вашу запись, написав “да”/“ага”**\n"
                 f"После этого мы свяжем вас с оператором\n"
                 "Для отмены записи напишите 'отмена'.\n\n"
-                f"📅 {dates} {time}\n"
-                f"💆 {massage_type} {duration}")
+                f"📅 {date_str} {time}\n"
+                f"💆 {massage_str} {duration}ч")
 
 
 def massage_booking_confirmed_text(lang):
@@ -899,14 +907,30 @@ def massage_booking_confirmed_text(lang):
                 f"Пожалуйста, оплатите наличными (₾/$)")
 
 
-def massage_booking_text(user, dates, time, massage_type, duration):
+def massage_booking_text(user, date, time, massage_type, duration):
     user_mention = utils.get_user_mention(user.user_id, user.full_name)
     username = f' | @{user.username}' if user.username else ''
+    date_str = utils.convert_date_to_str(date)
+    massage_str = massage_dict['russian'][massage_type]
 
     return (f"🆕 Заявка на массаж\n\n"
             f"👤 {user_mention}{username}\n"
-            f"📅 {dates} {time}\n"
-            f"💆 {massage_type} {duration}")
+            f"📅 {date_str} {time}\n"
+            f"💆 {massage_str} {duration}ч")
+
+
+def invalid_booking_time_error(lang):
+    if lang == "english":
+        return "Invalid booking time. Please choose a time that is within 9:00 - 20:00"
+    else:
+        return "Неверное время бронирования. Пожалуйста, выберите время, которое находится в пределах 9:00 - 20:00"
+
+
+def unavailable_time_error(lang):
+    if lang == "english":
+        return "This time slot is **unavailable**. Please choose a different time"
+    else:
+        return "Это время **занято**, пожалуйста, укажите другое время."
 # ======== Massage =======
 
 
@@ -944,6 +968,28 @@ SERVICES = {
     "10": ["photo_video", "Photo/Video", "Фото/Видео"],
     "11": ["cleaning", "Cleaning", "Уборка"],
     "12": ["rent_flat", "RentFlat", "Аренда Квартир"]
+}
+
+
+massage_dict = {
+    "english": {
+        "relaxing": "Relaxing",
+        "classic": "Classic",
+        "sports": "Sports",
+        "therapeutic_session": "Therapeutic Session",
+        "balinese": "Balinese",
+        "anti_cellulite": "Anti-cellulite",
+        "back_and_legs": "Back + legs",
+    },
+    "russian": {
+        "relaxing": "Расслабляющий",
+        "classic": "Классический",
+        "sports": "Спортивный",
+        "therapeutic_session": "Лечебный",
+        "balinese": "Балийский массаж",
+        "anti_cellulite": "Антицеллюлитный",
+        "back_and_legs": "Спина + ноги",
+    }
 }
 
 
