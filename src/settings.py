@@ -25,10 +25,18 @@ if int(TEST_MODE):
     log_dir = '/Users/spoonsimons/PycharmProjects/service_gudauri_bot/logs'
     path_to_sessions = '/Users/spoonsimons/PycharmProjects/service_gudauri_bot/sessions/'
     path_to_assets = '/Users/spoonsimons/PycharmProjects/service_gudauri_bot/src/assets/'
+    paragliding_chat_id = -1001826495601
+    notification_box_chat_id = -1001826495601
+    food_orders_chat_id = -1001826495601
+    massage_chat_id = -1001826495601
 else:
     log_dir = '/home/service-gudauri-bot/logs'
     path_to_sessions = '/home/service-gudauri-bot/sessions/'
     path_to_assets = '/home/service-gudauri-bot/src/assets/'
+    paragliding_chat_id = -1002352593736
+    notification_box_chat_id = -1002416931095
+    food_orders_chat_id = -1002253195663
+    massage_chat_id = -1002269031500
 
 
 logger = logging.getLogger("telegram")
@@ -53,8 +61,3 @@ dev_user_id = 365500138
 
 all_service_gudauri_user_id = 7197611297
 all_service_gudauri_username = '@AllServiceGudauri'
-
-notification_box_chat_id = -1002416931095  # -1001826495601
-
-food_orders_chat_id = -1002253195663
-massage_chat_id = -1002269031500

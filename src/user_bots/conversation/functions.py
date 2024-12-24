@@ -38,6 +38,14 @@ class ConversationService(TGObject):
             'massage_date_info_request': self.handle_massage_date_info_request,
             'massage_type_info_request': self.handle_massage_type_info_request,
             'massage_booking_confirmation_request': self.handle_massage_booking_confirmation_request,
+            # Paragliding
+            'paragliding_plan_info_request': self.handle_paragliding_plan_info_request,
+            'paragliding_booking_info_request': self.handle_paragliding_booking_info_request,
+            'paragliding_booking_confirmation_request': self.handle_paragliding_booking_confirmation_request,
+            # Snowbike
+            'snowbike_tour_info_request': self.handle_snowbike_tour_info_request,
+            'snowbike_booking_info_request': self.handle_snowbike_booking_info_request,
+            'snowbike_booking_confirmation_request': self.handle_snowbike_booking_confirmation_request,
         }
 
         if user.state in state_functions:
@@ -82,6 +90,8 @@ class ConversationService(TGObject):
             'instructor': self.handle_instructor_service,
             'food_coffee': self.handle_food_coffee_service,
             'massage': self.handle_massage_service,
+            'paragliding': self.handle_paragliding_service,
+            'snowbike_tour': self.handle_snowbike_service,
         }
 
         if service not in service_handlers:
@@ -94,7 +104,7 @@ class ConversationService(TGObject):
         self.repo.update_user(
             self.user_id,
             state='rent_equipment_info_request',
-            state_data={'user_answers': []}
+            state_data={'rental_period': 'None', 'selected_items': []}
         )
 
         user = self.repo.find_user(self.user_id)
@@ -114,22 +124,35 @@ class ConversationService(TGObject):
         if response.get('is_request_canceled'):
             return await self.all_services_menu()
 
+        response.pop("is_request_canceled", None)
+        selected_items = response.get("selected_items")
+        rental_period = response.get("rental_period")
+
         check_answer_response = api.analyze_answer_yes_no(self.text)
         answer = check_answer_response['answer']
-        if answer and answer != 'None' and user.state_data['user_answers']:
+        if answer and answer != 'None' and user.state_data['selected_items'] and user.state_data['rental_period'] != 'None':
             return await self.rent_equipment_confirmation_request()
 
-        rental_equipment = response['rental_equipment']
-        if rental_equipment == 'None':
-            return await self.respond(tmp.rent_equipment_error(lang))
+        # Проверка выбран ли товар
+        elif not selected_items and not user.state_data['selected_items']:
+            return await self.respond(tmp.no_food_selected_error(lang))
 
-        user.state_data['user_answers'].append(rental_equipment)
+        # Проверка наличия недоступных товаров
+        elif tmp.has_invalid_items(selected_items, tmp.equipment_dict):
+            return await self.respond(tmp.food_order_invalid_error(lang))
+
+        elif selected_items:
+            user.state_data['selected_items'].extend(selected_items)
+
+        if rental_period != 'None':
+            user.state_data['rental_period'] = rental_period
+
         self.repo.update_user(
             self.user_id,
             state_data=user.state_data
         )
 
-        text = tmp.rent_equipment_confirmation_text(lang, user.state_data['user_answers'])
+        text = tmp.rent_equipment_confirmation_text(lang, user.state_data['selected_items'], user.state_data['rental_period'])
         return await self.respond(text)
 
     async def rent_equipment_confirmation_request(self):
@@ -138,8 +161,9 @@ class ConversationService(TGObject):
         answer = response['answer']
 
         if answer:
-            user_answers = user.state_data['user_answers']
-            first_text = tmp.new_equipment_booking_text(user, user_answers)
+            selected_items = user.state_data['selected_items']
+            rental_period = user.state_data['rental_period']
+            first_text = tmp.new_equipment_booking_text(user, selected_items, rental_period)
             await stg.bot.send_message(stg.notification_box_chat_id, first_text)
 
             file_path = utils.get_path_to_asset('parking.mp4')
@@ -306,7 +330,7 @@ class ConversationService(TGObject):
             return await self.respond(tmp.no_food_selected_error(lang))
 
         # Проверка наличия недоступных товаров
-        elif tmp.has_invalid_items(selected_items):
+        elif tmp.has_invalid_items(selected_items, tmp.food_coffee_dict):
             return await self.respond(tmp.food_order_invalid_error(lang))
 
         else:
@@ -416,7 +440,7 @@ class ConversationService(TGObject):
         response.pop("is_request_canceled", None)
 
         if 'None' in response.values():
-            return await self.respond(tmp.massage_booking_error(lang))
+            return await self.respond(tmp.booking_error(lang))
 
         user.state_data = response
         self.repo.update_user(
@@ -439,7 +463,7 @@ class ConversationService(TGObject):
         response.pop("is_request_canceled", None)
 
         if 'None' in response.values():
-            return await self.respond(tmp.massage_booking_error(lang))
+            return await self.respond(tmp.booking_error(lang))
 
         date = response.get('date')
         time = response.get('time')
@@ -449,10 +473,10 @@ class ConversationService(TGObject):
         try:
             due_date = utils.combine_and_localize_datetime(date, time)
         except ValueError:
-            return await self.respond(tmp.massage_booking_error(lang))
+            return await self.respond(tmp.booking_error(lang))
 
         if not (9 <= due_date.hour < 20):
-            return await self.respond(tmp.invalid_booking_time_error(lang))
+            return await self.respond(tmp.invalid_massage_booking_time_error(lang))
 
         utc_dt = utils.convert_time_to_utc(due_date)
         if not self.repo.is_massage_booking_time_available(utc_dt, duration):
@@ -483,9 +507,8 @@ class ConversationService(TGObject):
             massage_type = user.state_data.get('massage_type')
             duration = user.state_data.get('duration')
 
-            due_date = utils.combine_and_localize_datetime(date, time)
-            utc_dt = utils.convert_time_to_utc(due_date)
-            self.repo.add_massage_booking(self.user_id, utc_dt, massage_type, duration)
+            due_date = utils.combine_and_localize_datetime(date, time, utc=True)
+            self.repo.add_massage_booking(self.user_id, due_date, massage_type, duration)
 
             first_text = tmp.massage_booking_text(user, date, time, massage_type, duration)
             await stg.bot.send_message(stg.massage_chat_id, first_text)
@@ -499,3 +522,206 @@ class ConversationService(TGObject):
             pass
         else:
             return await self.handle_massage_service()
+
+    async def handle_paragliding_service(self):
+        self.repo.update_user(
+            self.user_id,
+            state='paragliding_plan_info_request',
+            state_data=None,
+        )
+
+        user = self.repo.find_user(self.user_id)
+        lang = user.lead.lang
+        text = tmp.paragliding_plan_info_text(lang)
+        await self.respond(text)
+
+    async def handle_paragliding_plan_info_request(self):
+        user = self.repo.find_user(self.user_id)
+        response = api.extract_selected_paragliding_plan(self.text)
+        lang = user.lead.lang
+
+        if response.get('is_request_canceled'):
+            return await self.all_services_menu()
+
+        response.pop("is_request_canceled", None)
+
+        if 'None' in response.values():
+            return await self.respond(tmp.booking_error(lang))
+
+        user.state_data = response
+        user.state_data.update({'date': 'None', 'time': 'None', 'name': 'None', 'phone_number': 'None', })
+
+        self.repo.update_user(
+            self.user_id,
+            state='paragliding_booking_info_request',
+            state_data=user.state_data
+        )
+
+        text = tmp.user_details_collecting_text(lang)
+        return await self.respond(text)
+
+    async def handle_paragliding_booking_info_request(self):
+        user = self.repo.find_user(self.user_id)
+        response = api.extract_user_info(self.text)
+        lang = user.lead.lang
+
+        if response.get('is_request_canceled'):
+            return await self.handle_paragliding_service()
+
+        response.pop("is_request_canceled", None)
+
+        for key, value in response.items():
+            if value != 'None' and value:
+                user.state_data[key] = response[key]
+
+        self.repo.update_user(
+            self.user_id,
+            state_data=user.state_data
+        )
+
+        if 'None' in user.state_data.values():
+            return await self.respond(tmp.user_details_collecting_error(lang, user.state_data))
+
+        date = response.get('date')
+        time = response.get('time')
+
+        try:
+            due_date = utils.combine_and_localize_datetime(date, time)
+        except ValueError:
+            return await self.respond(tmp.booking_error(lang))
+
+        if not (10 <= due_date.hour < 17):
+            return await self.respond(tmp.invalid_paragliding_booking_time_error(lang))
+
+        self.repo.update_user(self.user_id, state='paragliding_booking_confirmation_request')
+
+        text = tmp.booking_confirmation_request_text(lang)
+        return await self.respond(text)
+
+    async def handle_paragliding_booking_confirmation_request(self):
+        user = self.repo.find_user(self.user_id)
+        lang = user.lead.lang
+        response = api.analyze_answer_yes_no(self.text)
+        answer = response['answer']
+
+        if response.get('is_request_canceled'):
+            return await self.handle_paragliding_service()
+
+        if answer:
+            date = user.state_data.get('date')
+            time = user.state_data.get('time')
+            name = user.state_data.get('name')
+            phone_number = user.state_data.get('phone_number')
+            selected_plan = user.state_data.get('selected_plan')
+
+            first_text = tmp.paragliding_booking_text(user, date, time, name, phone_number, selected_plan)
+            await stg.bot.send_message(stg.paragliding_chat_id, first_text)
+
+            second_text = tmp.paragliding_booking_confirmed_text(lang)
+            await self.respond(second_text)
+
+            return await self.all_services_menu()
+        elif answer is None:
+            pass
+        else:
+            return await self.handle_paragliding_service()
+
+    async def handle_snowbike_service(self):
+        self.repo.update_user(
+            self.user_id,
+            state='snowbike_tour_info_request',
+            state_data=None,
+        )
+
+        user = self.repo.find_user(self.user_id)
+        lang = user.lead.lang
+        text = tmp.snowbike_tour_info_text(lang)
+        await self.respond(text)
+
+    async def handle_snowbike_tour_info_request(self):
+        user = self.repo.find_user(self.user_id)
+        response = api.extract_selected_snowmobile_tour(self.text)
+        lang = user.lead.lang
+
+        if response.get('is_request_canceled'):
+            return await self.all_services_menu()
+
+        response.pop("is_request_canceled", None)
+
+        if 'None' in response.values():
+            return await self.respond(tmp.booking_error(lang))
+
+        user.state_data = response
+        user.state_data.update({'date': 'None', 'time': 'None', 'name': 'None', 'phone_number': 'None', })
+
+        self.repo.update_user(
+            self.user_id,
+            state='snowbike_booking_info_request',
+            state_data=user.state_data
+        )
+
+        text = tmp.user_details_collecting_text(lang)
+        return await self.respond(text)
+
+    async def handle_snowbike_booking_info_request(self):
+        user = self.repo.find_user(self.user_id)
+        response = api.extract_user_info(self.text)
+        lang = user.lead.lang
+
+        if response.get('is_request_canceled'):
+            return await self.handle_snowbike_service()
+
+        response.pop("is_request_canceled", None)
+
+        for key, value in response.items():
+            if value != 'None' and value:
+                user.state_data[key] = response[key]
+
+        self.repo.update_user(
+            self.user_id,
+            state_data=user.state_data
+        )
+
+        if 'None' in user.state_data.values():
+            return await self.respond(tmp.user_details_collecting_error(lang, user.state_data))
+
+        date = response.get('date')
+        time = response.get('time')
+
+        try:
+            due_date = utils.combine_and_localize_datetime(date, time)
+        except ValueError:
+            return await self.respond(tmp.booking_error(lang))
+
+        self.repo.update_user(self.user_id, state='snowbike_booking_confirmation_request')
+
+        text = tmp.booking_confirmation_request_text(lang)
+        return await self.respond(text)
+
+    async def handle_snowbike_booking_confirmation_request(self):
+        user = self.repo.find_user(self.user_id)
+        lang = user.lead.lang
+        response = api.analyze_answer_yes_no(self.text)
+        answer = response['answer']
+
+        if response.get('is_request_canceled'):
+            return await self.handle_snowbike_service()
+
+        if answer:
+            date = user.state_data.get('date')
+            time = user.state_data.get('time')
+            name = user.state_data.get('name')
+            phone_number = user.state_data.get('phone_number')
+            selected_tour = user.state_data.get('selected_tour')
+
+            first_text = tmp.snowbike_booking_text(user, date, time, name, phone_number, selected_tour)
+            await stg.bot.send_message(stg.paragliding_chat_id, first_text)
+
+            second_text = tmp.snowbike_booking_confirmed_text(lang)
+            await self.respond(second_text)
+
+            return await self.all_services_menu()
+        elif answer is None:
+            pass
+        else:
+            return await self.handle_snowbike_service()

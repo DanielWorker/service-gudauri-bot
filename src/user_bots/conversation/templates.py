@@ -106,11 +106,28 @@ def rent_equipment_info_text(lang):
 
 def rent_equipment_questions_text(lang):
     if lang == "english":
-        return ("What equipment or clothing would you like to rent?\n\n"
+        return ("1. What equipment or clothing would you like to rent?\n"
+                "2.	For how long? / For what dates?\n\n"
+                "**Example:**\n"
+                "1 3 5\n"
+                "2 days / 16.01 - 18.01\n\n"
                 "__To return to the menu, type 'menu' / 'cancel' / 'no'__")
     else:
-        return ("Что вы хотите взять из снаряжения, одежды?\n\n"
+        return ("1. Что вы хотите взять из снаряжения, одежды?\n"
+                "2. На какой срок? / На какие даты?\n\n"
+                "**Пример:**\n"
+                "1 3 5\n"
+                "2 суток / 16.01 - 18.01\n\n"
                 "__Для возврата в меню напишите 'меню' / 'отмена' / 'нет'__")
+
+
+def no_equipment_selected_error(lang):
+    if lang == 'english':
+        return ("Oops! You haven't selected any equipment yet. Please choose something before placing your order.\n"
+                "__Order example: 1 1 2 4__")
+    else:
+        return ("Ой! Вы еще не выбрали ни одно блюдо или кофе. Пожалуйста, выберите что-нибудь перед тем, как сделать заказ.\n"
+                "__Пример заказа: 1 1 2 4__")
 
 
 def rent_equipment_error(lang):
@@ -120,36 +137,56 @@ def rent_equipment_error(lang):
         return "Ошибка: Вы должны выбрать хотя бы один снаряд"
 
 
-def rent_equipment_confirmation_text(lang, user_answers):
-    user_list = ''
-    for n, answer in enumerate(user_answers, start=1):
-        user_list += f"{n}. {answer}\n"
+def rent_equipment_confirmation_text(lang, selected_items, rental_period):
+
+    equipment_text = get_equipment_order_text(selected_items, lang)
 
     if lang == "english":
-        return (f"**Confirm your booking by replying with “yes”/“ok”**\n"
-                f"After that, we will connect you with an operator.\n"
-                f"**You can also add equipment or clothing by writing below.**\n"
+        confirm_text = (f"**Confirm your booking by replying with “yes”/“ok”**\n"
+                        f"After that, we will connect you with an operator.\n") if rental_period != 'None' else ""
+        rp_text = rental_period if rental_period != 'None' else '**Please specify rental period!**'
+        return (f"{confirm_text}"
+                f"**You can still add equipment or clothing by writing below.**\n"
                 f"To cancel the rental, type 'Cancel'.\n\n"
-                f"{user_list}")
+                f"🕒 {rp_text}\n———\n"
+                f"{equipment_text}\n")
     else:
-        return (f"**Подтвердите ваше бронирование, написав “да”/“ага”**\n"
-                f"После этого мы свяжем вас с оператором\n"
-                f"**Вы также можете добавить снаряжение, одежду написав ниже**\n"
+        rp_text = rental_period if rental_period != 'None' else '**Пожалуйста укажите период аренды!**'
+        confirm_text = (f"**Подтвердите ваше бронирование, написав “да”/“ага”**\n"
+                        f"После этого мы свяжем вас с оператором\n") if rental_period != 'None' else ""
+        return (f"{confirm_text}"
+                f"**Вы все ещё можете добавить снаряжение, одежду написав ниже**\n"
                 f"Для отмены аренды напишите 'Отмена'\n\n"
-                f"{user_list}")
+                f"🕒 {rp_text}\n———\n"
+                f"{equipment_text}\n")
 
 
-def new_equipment_booking_text(user, user_answers):
+def get_equipment_order_text(selected_items, lang='russian'):
+    text = ''
+    n = 1
+
+    for item in selected_items:
+        number = item['number']
+        quantity = item['quantity']
+        position_name = equipment_dict[lang][number]['name']
+
+        for _ in range(quantity):
+            text += f'{n}. {position_name}\n'
+            n += 1
+
+    return text
+
+
+def new_equipment_booking_text(user, selected_items, rental_period):
     user_mention = utils.get_user_mention(user.user_id, user.full_name)
     username = f' | @{user.username}' if user.username else ''
 
-    user_list = ''
-    for n, answer in enumerate(user_answers, start=1):
-        user_list += f"{n}. {answer}\n"
+    equipment_text = get_equipment_order_text(selected_items)
 
     return (f"🆕 Заявка на аренду снаряжения\n\n"
             f"👤 {user_mention}{username}\n"
-            f"{user_list}")
+            f"🕒 {rental_period}\n"
+            f"{equipment_text}")
 
 
 def equipment_booking_confirmed_text(lang):
@@ -872,7 +909,7 @@ def massage_type_request_text(lang):
                 "__Для возврата в меню напишите 'меню' / 'отмена' / 'нет'__")
 
 
-def massage_booking_error(lang):
+def booking_error(lang):
     if lang == 'english':
         return 'Oops! Something was filled in incorrectly, please try again'
     else:
@@ -919,7 +956,7 @@ def massage_booking_text(user, date, time, massage_type, duration):
             f"💆 {massage_str} {duration}ч")
 
 
-def invalid_booking_time_error(lang):
+def invalid_massage_booking_time_error(lang):
     if lang == "english":
         return "Invalid booking time. Please choose a time that is within 9:00 - 20:00"
     else:
@@ -934,10 +971,192 @@ def unavailable_time_error(lang):
 # ======== Massage =======
 
 
+# ======== Paragliding =======
+def paragliding_plan_info_text(lang):
+    texts = {
+        "english": "**🪂 Paragliding Flight**\n\n"
+                   "Choose a tandem with a pilot:\n"
+                   "1. Standard 15-20 minutes 350₾\n"
+                   "2. Levitation Pro 35-40 minutes 500₾\n\n"
+                   "__To return to the menu, type 'menu' / 'cancel' / 'no'__",
+
+        "russian": "**🪂 Полет на параплане**\n\n"
+                   "Выберите тандем с пилотом:\n"
+                   "1. Стандартный 15-20 минут 350₾\n"
+                   "2. Левитация Про 35-40 минут 500₾\n\n"
+                   "__Для возврата в меню напишите 'меню' / 'отмена' / 'нет'__",
+    }
+
+    return texts[lang]
+
+
+def user_details_collecting_text(lang):
+    texts = {
+        "english": """
+1. What date should we book you for?
+2.	Time? 10:00 - 17:00
+3.	What is your name?
+4.	What is your phone number?
+
+**This is needed for the pilot to contact you.**
+
+Example (please write in separate lines):
+January 4
+10:00
+Sasha
++9955513437122
+
+__To return to the menu, type 'menu' / 'cancel' / 'no'__""",
+        "russian": """
+1. На какую дату вас записать?
+2. Время? 10.00 - 17.00
+3. Как вас зовут?
+4. Какой у вас номер телефона?
+
+**Это нужно пилоту, чтобы связаться с вами.**
+
+Пример (пишите в столбик):
+4 января
+10.00
+Саша
++9955513437122
+
+__Для возврата в меню напишите 'меню' / 'отмена' / 'нет'__"""
+    }
+
+    return texts[lang]
+
+
+def user_details_collecting_error(lang, state_data):
+    texts = {
+        'english': {
+            'date': 'What date should we book you for?',
+            'time': 'Time? 10:00 - 17:00',
+            'name': 'What is your name?',
+            'phone_number': 'What is your phone number?',
+            'error_text': 'Oops! Something was filled in incorrectly, please try again:'
+        },
+        'russian': {
+            'date': 'На какую дату вас записать?',
+            'time': 'Время? 10.00 - 17.00',
+            'name': 'Как вас зовут?',
+            'phone_number': 'Какой у вас номер телефона?',
+            'error_text': 'Ой! Похоже, что-то заполнено неверно. Пожалуйста, попробуйте снова:'
+        }
+    }
+
+    title = texts[lang]['error_text']
+    text = f"{title}\n\n"
+    n = 1
+    for key, value in state_data.items():
+        if key not in texts[lang]:
+            continue
+
+        if key == 'date' and value != 'None':
+            value = utils.convert_date_to_str(value)
+
+        key_text = value + ' ✅' if value != 'None' else texts[lang][key]
+        text += f"{n}. {key_text}\n"
+        n += 1
+
+    return text
+
+
+def booking_confirmation_request_text(lang):
+    if lang == "english":
+        return (f"**Confirm your booking by replying 'yes'/'ok'**\n"
+                f"After that, we will connect you with an operator\n"
+                "To cancel your booking, type 'cancel'.")
+    else:
+        return (f"**Подтвердите вашу запись, написав “да”/“ага”**\n"
+                f"После этого мы свяжем вас с оператором\n"
+                "Для отмены записи напишите 'отмена'.")
+
+
+def paragliding_booking_confirmed_text(lang):
+    if lang == "english":
+        return (f"**🎉 Your booking is confirmed!**\n"
+                f"The contact details have been sent to the pilot. They will contact you to confirm the details.\n"
+                f"Please pay in cash (₾/$)")
+    else:
+        return (f"**🎉 Ваша запись подтверждена!**\n"
+                f"Контакты отправлены пилоту, он свяжется с вами и уточнит детали.\n"
+                f"Пожалуйста, оплатите наличными (₾/$)")
+
+
+def paragliding_booking_text(user, date, time, name, phone_number, selected_plan):
+    user_mention = utils.get_user_mention(user.user_id, user.full_name)
+    username = f' | @{user.username}' if user.username else ''
+    date_str = utils.convert_date_to_str(date)
+
+    return (f"🆕 Заявка на параплан\n\n"
+            f"👤 {user_mention}{username}\n"
+            f"📅 {date_str} {time}\n"
+            f"🪂 {selected_plan}\n"
+            f"🧍 {name}\n"
+            f"📞 {phone_number}")
+
+
+def invalid_paragliding_booking_time_error(lang):
+    if lang == "english":
+        return "Invalid booking time. Please choose a time that is within 10:00 - 17:00"
+    else:
+        return "Неверное время бронирования. Пожалуйста, выберите время, которое находится в пределах 10:00 - 17:00"
+# ======== Paragliding =======
+
+
+# ======== Snowbike =======
+def snowbike_tour_info_text(lang):
+    texts = {
+        "english": "**🏍 Snowmobile Tour**\n\n"
+                   "Choose your tour (you drive):\n"
+                   "1. 1 person (4 km loop) - 150₾\n"
+                   "2. 2 people (4 km loop) - 250₾\n\n"
+                   "**⏰ Before 10:00 or after 17:00:**\n"
+                   "1 person 30 minutes - 200₾\n\n"
+                   "__To return to the menu, type 'menu' / 'cancel' / 'no'__",
+
+        "russian": "**🏍Тур на снегоходе**\n\n"
+                   "Выберите тур (вы за рулем):\n"
+                   "1. 1 человек (4 км круг) - 150₾\n"
+                   "2. 2 человека (4 км круг) - 250₾\n\n"
+                   "**⏰ До 10:00 или после 17:00:**\n"
+                   "1 чел 30 минут - 200₾\n\n"
+                   "__Для возврата в меню напишите 'меню' / 'отмена' / 'нет'__",
+    }
+
+    return texts[lang]
+
+
+def snowbike_booking_confirmed_text(lang):
+    if lang == "english":
+        return (f"**🎉 Your booking is confirmed!**\n"
+                f"Contacts have been sent, please wait, we will contact you and clarify the details.\n"
+                f"Please pay in cash (₾/$)")
+    else:
+        return (f"**🎉 Ваша запись подтверждена!**\n"
+                f"Контакты отправлены, ожидайте, мы свяжемся с вами и уточним детали.\n"
+                f"Пожалуйста, оплатите наличными (₾/$)")
+
+
+def snowbike_booking_text(user, date, time, name, phone_number, selected_tour):
+    user_mention = utils.get_user_mention(user.user_id, user.full_name)
+    username = f' | @{user.username}' if user.username else ''
+    date_str = utils.convert_date_to_str(date)
+
+    return (f"🆕 Заявка: Тур на снегоходе\n\n"
+            f"👤 {user_mention}{username}\n"
+            f"📅 {date_str} {time}\n"
+            f"🏍 {selected_tour}\n"
+            f"🧍 {name}\n"
+            f"📞 {phone_number}")
+# ======== Snowbike =======
+
+
 # ======== Utils =======
-def has_invalid_items(selected_items):
+def has_invalid_items(selected_items, items_dict):
     selected_item_ids = [item['number'] for item in selected_items]
-    return any(_id not in food_coffee_dict['english'].keys() for _id in selected_item_ids)
+    return any(_id not in items_dict['english'].keys() for _id in selected_item_ids)
 # ======== Utils =======
 
 
@@ -1038,6 +1257,33 @@ food_coffee_dict = {
         19: {"name": "Свежевыжатый гранат 0.5л — **20₾**", "price": 20},
         20: {"name": "Свежевыж. апельс.+мандарин 0.5л — **20₾**", "price": 20},
     }
+}
 
+
+equipment_dict = {
+    "english": {
+        1: {"name": "Ski set: Skis, poles, boots, helmet", "price": 5},
+        2: {"name": "Snowboard set: Snowboard, boots, helmet", "price": 15},
+        3: {"name": "Clothes set: Jacket, pants, goggles", "price": 10},
+        4: {"name": "Skis + poles / snowboard", "price": 3},
+        5: {"name": "Goggles", "price": 12},
+        6: {"name": "Helmet", "price": 10},
+        7: {"name": "Gloves", "price": 5},
+        8: {"name": "Protective shorts", "price": 18},
+        9: {"name": "Jacket", "price": 10},
+        10: {"name": "Pants"}
+    },
+    "russian": {
+        1: {"name": "Комплект лыж: Лыжи, палки, ботинки, шлем", "price": 5},
+        2: {"name": "Комплект сноуборда: Сноуборд, ботинки, шлем", "price": 15},
+        3: {"name": "Комплект одежды: Куртка, штаны, маска", "price": 10},
+        4: {"name": "Лыжи + палки / сноуборд", "price": 3},
+        5: {"name": "Маска", "price": 8},
+        6: {"name": "Шлем", "price": 12},
+        7: {"name": "Перчатки", "price": 10},
+        8: {"name": "Защитные шорты", "price": 5},
+        9: {"name": "Куртка", "price": 18},
+        10: {"name": "Штаны", "price": 10},
+    }
 }
 # ======== Templates ========

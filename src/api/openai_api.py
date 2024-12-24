@@ -168,35 +168,48 @@ def determine_service(text):
 
 
 def extract_rental_equipment_details(user_input):
-    response = client.chat.completions.create(
+    response_equipment = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
             {
                 "role": "system",
                 "content": (
-                    "You are an assistant that extracts rental equipment details from user input. "
-                    "The user may request equipment based on the available options: "
-                    "1-3 consecutive days: 47.5₾ (18$)/day per set, "
-                    "4-6 consecutive days: 42₾/day per set, "
-                    "7 or more consecutive days: 35₾/day per set, "
-                    "Skis + poles / snowboard: 39₾/day, "
-                    "Goggles: 10₾/day, "
-                    "Helmet: 10₾/day, "
-                    "Gloves: 10₾/day, "
-                    "Protective shorts: 10₾/day, "
-                    "Jacket: 20₾/day, "
-                    "Pants: 20₾/day."
-                    "You will analyze the input and return a JSON object with a key 'rental_equipment' "
-                    "which contains the exact text that the user mentioned in their request. "
-                    "If no rental equipment is mentioned or it's unclear, return 'None'. "
-                    "Example input could be: "
-                    "'I would like to rent skis and a helmet for 3 days' or "
-                    "'I need a snowboard for 7 days'."
+                    # "You are an assistant that extracts rental equipment details from user input. "
+                    # "The user can provide either equipment numbers or item names and optionally quantities. "
+                    "You are an assistant that processes rental equipment orders. The user will provide a equipment number, name, "
+                    "and optionally the quantity in their input. You need to return a JSON object containing one key: "
+                    "'selected_items'. "
+                    "1. 'selected_items' should be an array of objects, where each object has 'number' (item number) "
+                    "and 'quantity' (default is 1). "
+                    "2. If a equipment number is repeated in the input, treat it as a separate instance with its own quantity. "
+                    "Example: For the input '2 2 4 7', the output should be: "
+                    "{'selected_items': [{'number': 2, 'quantity': 2}, {'number': 4, 'quantity': 1}, {'number': 7, 'quantity': 1}]}. "
+                    "3. The input may include typos, and you should account for similar words. "
+                    "Analyze and match equipment names or numbers accurately. "
+                    "You should handle input in both English and Russian, account for typos, and match product names. "
+                    "4. You should prioritize identifying equipment items and ignore any references to time periods (e.g., '2 days' or '16.01 - 18.01'). "
+                    "Rental equipment options include: "
+                    "1. Ski Set: Skis, poles, boots, helmet "
+                    "2. Snowboard set: Snowboard, boots, helmet "
+                    "3. Clothes set: Jacket, pants, goggles. "
+                    "Additional items: "
+                    "4. Skis + poles / snowboard, "
+                    "5. Goggles, "
+                    "6. Helmet, "
+                    "7. Gloves, "
+                    "8. Protective shorts, "
+                    "9. Jacket, "
+                    "10. Pants. "
+                    "You need to return a JSON object with a key 'selected_items' containing an array of objects, "
+                    "each with 'number' (the equipment number) and 'quantity' (default is 1). "
+                    "If the user mentions equipment by name, match it to the correct number. "
+                    "If no equipment is mentioned or it's unclear, return empty array. "
+                    "For example, '1 2 1 4' or 'skis, helmet, gloves'. "
                 )
             },
             {
                 "role": "user",
-                "content": f"{user_input}"
+                "content": user_input
             }
         ],
         response_format={
@@ -206,21 +219,79 @@ def extract_rental_equipment_details(user_input):
                 "schema": {
                     "type": "object",
                     "properties": {
-                        "rental_equipment": {
-                            "description": "The exact equipment requested by the user, or 'None' if not provided.",
-                            "type": ["string", "null"]
+                        "selected_items": {
+                            "description": "An array of selected items with their number and quantity.",
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "number": {
+                                        "description": "The number of the selected equipment item.",
+                                        "type": "integer"
+                                    },
+                                    "quantity": {
+                                        "description": "The quantity of the selected item (defaults to 1 if not provided).",
+                                        "type": "integer"
+                                    }
+                                },
+                                "required": ["number", "quantity"]
+                            }
                         },
                         **default_properties
                     },
-                    "required": ["rental_equipment"],
+                    "required": ["selected_items"],
                     "additionalProperties": False
                 }
             }
         }
     )
 
-    result = response.choices[0].message.content
-    return json.loads(result)
+    response_rental_period = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {
+                "role": "system",
+                "content": (
+                    "You are an assistant that extracts rental period or dates from user input. "
+                    "The user may provide information about the rental period in terms of days, or specific dates. "
+                    "You should extract this information and return it in a format such as 'X days' or 'from date to date'. "
+                    "If no clear rental period or dates are mentioned, return 'None'. "
+                    "Examples: '3 days', '16.01 - 18.01', '1 сутки', '2 суток', '3 дня', '20.01 25.01', '1 января - 3 января', 'Jan 2 - Kan 6', '1 декабря'."
+                )
+            },
+            {
+                "role": "user",
+                "content": user_input
+            }
+        ],
+        response_format={
+            "type": "json_schema",
+            "json_schema": {
+                "name": "get_rental_period",
+                "schema": {
+                    "type": "object",
+                    "properties": {
+                        "rental_period": {
+                            "description": "The rental period or dates mentioned by the user, or 'None' if not provided.",
+                            "type": "string"
+                        },
+                    },
+                    "required": ["rental_period"],
+                    "additionalProperties": False
+                }
+            }
+        }
+    )
+
+    rental_period_result = response_rental_period.choices[0].message.content
+    rental_period_data = json.loads(rental_period_result)
+
+    equipment_result = response_equipment.choices[0].message.content
+    equipment_data = json.loads(equipment_result)
+
+    result = {**rental_period_data, **equipment_data}
+    return result
+
 
 def extract_mentor_booking_details(user_input):
     response = client.chat.completions.create(
@@ -295,7 +366,7 @@ def extract_mentor_booking_details(user_input):
 
 
 def extract_user_details(user_input):
-    phone_pattern = r"(\+?\d{1,3}[ -]?)?(\(?\d{1,5}\)?[ -]?)?[\d\s\-]{6,13}"
+    phone_pattern = r"\+?\d{1,3}[-\s]?\(?\d{1,5}\)?[-\s]?[\d\s\-]{6,13}"
 
     match = re.search(phone_pattern, user_input)
     phone_number = match.group(0).strip() if match else 'None'
@@ -723,6 +794,205 @@ def extract_massage_details(user_input):
     return json.loads(result)
 
 
+def extract_selected_paragliding_plan(user_input):
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {
+                "role": "system",
+                "content": (
+                    "You are an assistant that extracts the user's selected plan from the input. "
+                    "The user has two options to choose from: "
+                    "1. Standard 15-20 minutes 350₾ "
+                    "2. Levitation Pro 35-40 minutes 500₾. "
+                    "The user may respond in either Russian or English. "
+                    "You need to analyze the input and return a JSON object with a key 'selected_plan' "
+                    "containing the exact text that the user mentioned. "
+                    "If the user's choice is unclear or not one of the options, return 'None'. "
+                    "Examples of valid inputs: "
+                    "'Standard', "
+                    "'Стандарт', "
+                    "'1', "
+                    "'Levitation Pro'. "
+                    "'Левитация Про'. "
+                    "'2'. "
+                    "Examples of invalid inputs: "
+                    "'Any plan', or no clear option specified."
+                )
+            },
+            {
+                "role": "user",
+                "content": f"{user_input}"
+            }
+        ],
+        response_format={
+            "type": "json_schema",
+            "json_schema": {
+                "name": "get_selected_plan",
+                "schema": {
+                    "type": "object",
+                    "properties": {
+                        "selected_plan": {
+                            "description": "The exact plan chosen by the user, or 'None' if unclear or not provided.",
+                            "type": ["string", "null"]
+                        },
+                        **default_properties
+                    },
+                    "required": ["selected_plan"],
+                    "additionalProperties": False
+                }
+            }
+        }
+    )
+
+    result = response.choices[0].message.content
+    return json.loads(result)
+
+
+def extract_user_info(user_input):
+    phone_pattern = r"\+?\d{1,3}[-\s]?\(?\d{1,5}\)?[-\s]?[\d\s\-]{6,13}"
+
+    match = re.search(phone_pattern, user_input)
+    phone_number = match.group(0).strip() if match else 'None'
+
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {
+                "role": "system",
+                "content": (
+                    "Ты помощник, который извлекает данные пользователя и информацию для бронирования. "
+                    "Пользователь может предоставить следующие данные: "
+                    "1. Дату бронирования. "
+                    "2. Время бронирования"
+                    "3. Имя пользователя. "
+                    "4. Номер телефона. "
+                    "You should extract a valid name, a valid phone number, a valid date and time. "
+                    "If the name is unclear or not valid (like only a single letter), return 'None'. "
+                    "For phone numbers, return 'None' if it doesn't follow international format. "
+                    "If any of the answers are missing or unclear, return 'None' for that key. "
+                    "Твоя задача: извлечь имя, номер телефона, дату и время. "
+                    "Дата должна быть в формате DD/MM или 'None', если не указана. "
+                    "Время должно быть в формате HH:MM или 'None', если не указано. "
+                    "Response can be retrieved in English and with typos"
+                    "Примеры: "
+                    "- '8 января, 10.00, Иван, +995123456789' "
+                    "- 'Иван' "
+                    "- '+995123456789' "
+                    "- '8 января' "
+                    "- '10:00'."
+                    # "- '8 января, 10.00, Иван, +995123456789' "
+                    # "- 'Jan 6, 12 00, Leo, +995123456732' "
+                    # "- '+487561236532, Алексей, 8.01, 14:00' "
+                    # "- 'Dec 29\n10:00\nМария\n995123456789' "
+                    # "- 'Dec 29' "
+                    # "- '10:00' "
+                    # "- '10.00' "
+                    # "- 'Мария' "
+                    # "- '995123456789'. "
+                    "Верни результат в формате JSON с ключами 'date', 'time', 'name', 'phone_number'."
+                )
+            },
+            {
+                "role": "user",
+                "content": f"{user_input}"
+            }
+        ],
+        response_format={
+            "type": "json_schema",
+            "json_schema": {
+                "name": "get_details",
+                "schema": {
+                    "type": "object",
+                    "properties": {
+                        "date": {
+                            "description": "Дата записи в формате DD/MM или 'None', если не указана.",
+                            "type": ["string", "null"]
+                        },
+                        "time": {
+                            "description": "Время записи в формате HH:MM или 'None', если не указано.",
+                            "type": ["string", "null"]
+                        },
+                        "name": {
+                            "description": "Имя пользователя, или 'None', если имя не указано или некорректно.",
+                            "type": ["string", "null"]
+                        },
+                        "phone_number": {
+                            "description": "Номер телефона в международном формате, или 'None', если номер не указан или некорректен.",
+                            "type": ["string", "null"]
+                        },
+                        **default_properties
+                    },
+                    "required": ["name", "phone_number", "date", "time"],
+                    "additionalProperties": False
+                }
+            }
+        }
+    )
+
+    result = response.choices[0].message.content
+    extracted_details = json.loads(result)
+    extracted_details["phone_number"] = phone_number
+
+    return extracted_details
+
+
+def extract_selected_snowmobile_tour(user_input):
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {
+                "role": "system",
+                "content": (
+                    "Вы — помощник, который извлекает выбранный пользователем тур на снегоходе из его ввода. "
+                    "Пользователь может выбрать один из двух туров: "
+                    "1. 1 человек (4 км круг) - 150₾ "
+                    "2. 2 человека (4 км круг) - 250₾. "
+                    "Ответ пользователя может быть как на русском, так и на английском языке. "
+                    "The user response can be either in Russian or in English. "
+                    "Вам нужно проанализировать ввод и вернуть объект JSON с ключом 'selected_tour', "
+                    "который будет содержать точный текст, указанный пользователем. "
+                    "Если выбор пользователя неясен или не соответствует одной из предложенных опций, верните 'None'. "
+                    "Примеры корректных вариантов ввода: "
+                    "- '1 человек (4 км круг)', "
+                    "- '2 человека (4 км круг)' "
+                    "- '1 person' "
+                    "- '2 peoples' "
+                    "- '1', "
+                    "- '2', "
+                    "Примеры некорректных вариантов ввода: "
+                    "'Любой тур', или нет четкого указания опции."
+                )
+            },
+            {
+                "role": "user",
+                "content": f"{user_input}"
+            }
+        ],
+        response_format={
+            "type": "json_schema",
+            "json_schema": {
+                "name": "get_selected_tour",
+                "schema": {
+                    "type": "object",
+                    "properties": {
+                        "selected_tour": {
+                            "description": "The exact tour chosen by the user, or 'None' if unclear or not provided.",
+                            "type": ["string", "null"]
+                        },
+                        **default_properties
+                    },
+                    "required": ["selected_tour"],
+                    "additionalProperties": False
+                }
+            }
+        }
+    )
+
+    result = response.choices[0].message.content
+    return json.loads(result)
+
+
 default_properties = {
     "is_request_canceled": {
         "description": "True if the response contains a cancellation request or 'menu'/'меню' command in any register, otherwise False.",
@@ -730,21 +1000,7 @@ default_properties = {
     },
 }
 
-# x = extract_massage_details('Расслабляющий 1ч')
-# x = extract_booking_details_for_massage('35.01 12 00')
-x = extract_rental_equipment_details('1 2 3')
+# x = extract_selected_snowmobile_tour('1 person')
+# x = extract_rental_equipment_details('1 2 2 3 4')
+x = extract_rental_equipment_details('1 2 2 3 4\n')
 print(x)
-
-# x = detect_delivery_or_pickup('1 2 3 4')
-# print(extract_mentor_booking_details('2 взрослых 4 января 12.30 Сноуборд, 10-20 лет'))
-# print(extract_mentor_booking_details('8 января\n10 10\nЛыжи\n1 ребенок\n10 лет'))
-# print(extract_food_order_details('2 2 2 4 7'))
-# print(extract_mentor_booking_details('8 января, санки, 3 котика'))
-# print(extract_user_details('Даниил +48572779167'))
-
-# print(extract_order_details("1, 2 и 19"))
-# print(extract_rental_equipment_details("1. Мне нужен шлем, перчатки\n2. Куртка"))
-# print(analyze_answer_yes_no("Чего"))
-# print(extract_booking_details('16 января, 14:00, лыжи, 1 взрослый'))
-# print(determine_service('1'))
-# print(determine_service('Я хочу массаж'))

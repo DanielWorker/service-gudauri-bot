@@ -22,7 +22,7 @@ def get_localized_datetime(datetime_obj=None):
     return pytz.utc.localize(datetime_obj).astimezone(timezone)
 
 
-def combine_and_localize_datetime(date, time):
+def combine_and_localize_datetime(date, time, utc=False):
     current_year = datetime.now().year
 
     dt_str = f"{current_year}/{date} {time}"
@@ -34,7 +34,10 @@ def combine_and_localize_datetime(date, time):
     if localized_date_time.month < 12 and localized_date_time.year == 2024:
         localized_date_time = localized_date_time.replace(year=localized_date_time.year + 1)
 
-    return localized_date_time
+    if utc:
+        return convert_time_to_utc(localized_date_time)
+    else:
+        return localized_date_time
 
 
 def convert_date_to_str(date_str):
