@@ -19,6 +19,7 @@ BOT_ID = os.getenv("BOT_ID")
 BOT_USERNAME = os.getenv("BOT_USERNAME")
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+APIFY_TOKEN = os.getenv("APIFY_TOKEN")
 TEST_MODE = os.getenv("TEST_MODE")
 
 if int(TEST_MODE):

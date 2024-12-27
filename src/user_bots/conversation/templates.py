@@ -1153,6 +1153,110 @@ def snowbike_booking_text(user, date, time, name, phone_number, selected_tour):
 # ======== Snowbike =======
 
 
+# ======== Currency Exchange =======
+def currency_exchange_info_text(lang):
+    current_rate = utils.get_currency_rate()
+
+    if lang == "english":
+        text = f"""**🗻 We are located in New Gudauri**
+💱 Exchange only from $100 to GEL ₾
+💵 Today's rate: $1 = ₾{current_rate}
+
+1. Specify the amount in $ for exchange
+2. Date
+3. Time of visit? ([Map link](https://g.co/kgs/LxLVUAf))
+3. What is your name?
+4. What is your phone number?
+
+**Example (write in a column):**
+400
+January 4
+12:56
+Yaroslav
++9955513437122
+
+"__To return to the menu, type 'menu' / 'cancel' / 'no'__"""
+    else:
+        text = f"""**🗻 Мы находимся в Нью-Гудаури**
+💱 Обмен только от 100$ на лари ₾
+💵 Курс сегодня $1 = ₾{current_rate}
+
+1. Укажите сумму $ для обмена
+2. Дата
+3. Время визита? ([Ссылка на карту](https://g.co/kgs/LxLVUAf))
+3. Как вас зовут?
+4. Какой у вас номер телефона?
+
+**Пример (пишите в столбик):**
+400
+4 января
+12 56
+Ярослав
++9955513437122
+
+"__Для возврата в меню напишите 'меню' / 'отмена' / 'нет'__"""
+
+    return text
+
+
+def exchange_booking_confirmed_text(lang):
+    if lang == "english":
+        return (f"**🎉 Your booking is confirmed!**\n"
+                f"Your contact details have been sent to the operator, who will contact you before the transaction.")
+    else:
+        return (f"**🎉 Ваша запись подтверждена!**\n"
+                f"Контакты отправлены, операционисту, до операции он свяжется с вами.")
+
+
+def exchange_booking_error(lang, state_data):
+    texts = {
+        'english': {
+            'amount': 'Specify the amount in $ for exchange',
+            'date': 'What date should we book you for?',
+            'time': 'Time?',
+            'name': 'What is your name?',
+            'phone_number': 'What is your phone number?',
+            'error_text': 'Oops! Something was filled in incorrectly, please try again:'
+        },
+        'russian': {
+            'amount': 'Укажите сумму $ для обмена',
+            'date': 'На какую дату вас записать?',
+            'time': 'Время?',
+            'name': 'Как вас зовут?',
+            'phone_number': 'Какой у вас номер телефона?',
+            'error_text': 'Ой! Похоже, что-то заполнено неверно. Пожалуйста, попробуйте снова:'
+        }
+    }
+
+    title = texts[lang]['error_text']
+    text = f'{title}\n\n'
+    n = 1
+    for key, value in state_data.items():
+        if key not in texts[lang]:
+            continue
+
+        key_text = value + ' ✅' if value != 'None' else texts[lang][key]
+        text += f'{n}. {key_text}\n'
+        n += 1
+
+    return text
+
+
+def exchange_booking_text(user, amount, date, time, name, phone_number):
+    user_mention = utils.get_user_mention(user.user_id, user.full_name)
+    username = f' | @{user.username}' if user.username else ''
+    date_str = utils.convert_date_to_str(date)
+
+    return (f"🆕 Заявка: Обмен валюты\n\n"
+            f"👤 {user_mention}{username}\n"
+            f"📅 {date_str} {time}\n\n"
+            f"💵 ${amount}\n"
+            f"🧍 {name}\n"
+            f"📞 {phone_number}")
+
+# ======== Currency Exchange =======
+
+
 # ======== Utils =======
 def has_invalid_items(selected_items, items_dict):
     selected_item_ids = [item['number'] for item in selected_items]

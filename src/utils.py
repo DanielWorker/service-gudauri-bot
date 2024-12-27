@@ -1,6 +1,7 @@
 from datetime import datetime
 import src.settings as stg
 
+from apify_client import ApifyClient
 import pytz
 
 
@@ -61,3 +62,19 @@ def get_user_mention(user_id, name):
 
 def get_path_to_asset(image_name):
     return stg.path_to_assets + image_name
+
+
+def get_currency_rate():
+    client = ApifyClient(stg.APIFY_TOKEN)
+
+    run_input = {
+        "from": "USD",
+        "to": "GEL",
+    }
+
+    run = client.actor("bot_kevin/google-currency-rate").call(run_input=run_input)
+
+    items_iterator = client.dataset(run["defaultDatasetId"]).iterate_items()
+    first_item = next(items_iterator, None)
+    if first_item:
+        return first_item["rate"] - 0.16

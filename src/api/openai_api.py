@@ -993,6 +993,88 @@ def extract_selected_snowmobile_tour(user_input):
     return json.loads(result)
 
 
+def extract_exchange_info(user_input):
+    # Шаблон для поиска номера телефона
+    phone_pattern = r"\+?\d{1,3}[-\s]?\(?\d{1,5}\)?[-\s]?[\d\s\-]{6,13}"
+
+    # Извлечение номера телефона
+    match = re.search(phone_pattern, user_input)
+    phone_number = match.group(0).strip() if match else 'None'
+
+    # GPT запрос
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {
+                "role": "system",
+                "content": (
+                    "You are an assistant that extracts user information for an exchange request. "
+                    "The user may provide the following details in either Russian or English: "
+                    "1. The amount in dollars they want to exchange (e.g., '100$', 'сто долларов', '400'). "
+                    "2. The date of their visit (e.g., '8 January', '8 января'). "
+                    "3. The time of their visit (e.g., '10:00', '10 утра'). "
+                    "4. Their name (e.g., 'John', 'Иван'). "
+                    "5. Their phone number in international format (e.g., '+995123456789'). "
+                    "You must extract this information and return it in JSON format. "
+                    "If any of the data is missing or unclear, return 'None' for that key. "
+                    "Make sure to handle both Russian and English inputs. "
+                    "Examples: "
+                    "- '400\n4 января\n12.56\nЯрослав\n+995123456789', "
+                    "- '400, 4 января, 12.56, Ярослав, +995123456789', "
+                    "- '1. 400\n2. 4 января\n3. 12.56\n4. Ярослав\n5. +995123456789', "
+                )
+            },
+            {
+                "role": "user",
+                "content": f"{user_input}"
+            }
+        ],
+        response_format={
+            "type": "json_schema",
+            "json_schema": {
+                "name": "get_selected_tour",
+                "schema": {
+                    "type": "object",
+                    "properties": {
+                        "amount": {
+                            "description": "The amount to exchange in dollars or 'None' if not specified.",
+                            "type": ["number", "null"]
+                        },
+                        "date": {
+                            "description": "The visit date in DD/MM format or 'None' if not specified.",
+                            "type": ["string", "null"]
+                        },
+                        "time": {
+                            "description": "The visit time in HH:MM format or 'None' if not specified.",
+                            "type": ["string", "null"]
+                        },
+                        "name": {
+                            "description": "The user's name or 'None' if not specified or invalid.",
+                            "type": ["string", "null"]
+                        },
+                        "phone_number": {
+                            "description": "The phone number in international format or 'None' if not specified or invalid.",
+                            "type": ["string", "null"]
+                        },
+                        **default_properties
+                    },
+                    "required": ["amount", "date", "time", "name", "phone_number"],
+                    "additionalProperties": False
+                }
+            },
+        }
+    )
+
+    # Обработка ответа
+    result = response.choices[0].message.content
+    extracted_details = json.loads(result)
+
+    # Добавляем телефон, если он был найден
+    extracted_details["phone_number"] = phone_number
+
+    return extracted_details
+
+
 default_properties = {
     "is_request_canceled": {
         "description": "True if the response contains a cancellation request or 'menu'/'меню' command in any register, otherwise False.",

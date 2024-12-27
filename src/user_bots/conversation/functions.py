@@ -46,6 +46,10 @@ class ConversationService(TGObject):
             'snowbike_tour_info_request': self.handle_snowbike_tour_info_request,
             'snowbike_booking_info_request': self.handle_snowbike_booking_info_request,
             'snowbike_booking_confirmation_request': self.handle_snowbike_booking_confirmation_request,
+            # Exchange
+            'exchange_info_request': self.handle_exchange_info_request,
+            'exchange_booking_confirmation_request': self.handle_exchange_booking_confirmation_request,
+
         }
 
         if user.state in state_functions:
@@ -92,6 +96,7 @@ class ConversationService(TGObject):
             'massage': self.handle_massage_service,
             'paragliding': self.handle_paragliding_service,
             'snowbike_tour': self.handle_snowbike_service,
+            'exchange': self.handle_exchange_service,
         }
 
         if service not in service_handlers:
@@ -582,8 +587,8 @@ class ConversationService(TGObject):
         if 'None' in user.state_data.values():
             return await self.respond(tmp.user_details_collecting_error(lang, user.state_data))
 
-        date = response.get('date')
-        time = response.get('time')
+        date = user.state_data.get('date')
+        time = user.state_data.get('time')
 
         try:
             due_date = utils.combine_and_localize_datetime(date, time)
@@ -685,8 +690,8 @@ class ConversationService(TGObject):
         if 'None' in user.state_data.values():
             return await self.respond(tmp.user_details_collecting_error(lang, user.state_data))
 
-        date = response.get('date')
-        time = response.get('time')
+        date = user.state_data.get('date')
+        time = user.state_data.get('time')
 
         try:
             due_date = utils.combine_and_localize_datetime(date, time)
@@ -725,3 +730,78 @@ class ConversationService(TGObject):
             pass
         else:
             return await self.handle_snowbike_service()
+
+    async def handle_exchange_service(self):
+        self.repo.update_user(
+            self.user_id,
+            state='exchange_info_request',
+            state_data={'amount': 'None', 'date': 'None', 'time': 'None', 'name': 'None', 'phone_number': 'None', },
+        )
+
+        user = self.repo.find_user(self.user_id)
+        lang = user.lead.lang
+        text = tmp.currency_exchange_info_text(lang)
+        await self.respond(text, link_preview=False)
+
+    async def handle_exchange_info_request(self):
+        user = self.repo.find_user(self.user_id)
+        response = api.extract_exchange_info(self.text)
+        lang = user.lead.lang
+
+        if response.get('is_request_canceled'):
+            return await self.all_services_menu()
+
+        response.pop("is_request_canceled", None)
+
+        for key, value in response.items():
+            if value != 'None' and value:
+                user.state_data[key] = response[key]
+
+        self.repo.update_user(
+            self.user_id,
+            state_data=user.state_data
+        )
+
+        if 'None' in response.values():
+            return await self.respond(tmp.exchange_booking_error(lang, user.state_data))
+
+        date = response.get('date')
+        time = response.get('time')
+
+        try:
+            due_date = utils.combine_and_localize_datetime(date, time)
+        except ValueError:
+            return await self.respond(tmp.booking_error(lang))
+
+        self.repo.update_user(self.user_id, state='exchange_booking_confirmation_request')
+
+        text = tmp.booking_confirmation_request_text(lang)
+        return await self.respond(text)
+
+    async def handle_exchange_booking_confirmation_request(self):
+        user = self.repo.find_user(self.user_id)
+        lang = user.lead.lang
+        response = api.analyze_answer_yes_no(self.text)
+        answer = response['answer']
+
+        if response.get('is_request_canceled'):
+            return await self.handle_exchange_service()
+
+        if answer:
+            amount = user.state_data.get('amount')
+            date = user.state_data.get('date')
+            time = user.state_data.get('time')
+            name = user.state_data.get('name')
+            phone_number = user.state_data.get('phone_number')
+
+            first_text = tmp.exchange_booking_text(user, amount, date, time, name, phone_number)
+            await stg.bot.send_message(stg.notification_box_chat_id, first_text)
+
+            second_text = tmp.exchange_booking_confirmed_text(lang)
+            await self.respond(second_text)
+
+            return await self.all_services_menu()
+        elif answer is None:
+            pass
+        else:
+            return await self.handle_exchange_service()

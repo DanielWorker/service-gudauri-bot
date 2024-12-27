@@ -54,6 +54,10 @@ class ConversationCommands(TGObject):
             'snowbike_tour_info_request': self.functions.all_services_menu,
             'snowbike_booking_info_request': self.functions.handle_snowbike_service,
             'snowbike_booking_confirmation_request': self.functions.handle_snowbike_service,
+            # Exchange
+            'exchange_info_request': self.functions.all_services_menu,
+            'exchange_booking_confirmation_request': self.functions.handle_exchange_service,
+
         }
 
         handler = state_routes.get(user.state, self.functions.all_services_menu)
