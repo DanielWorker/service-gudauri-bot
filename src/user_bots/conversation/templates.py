@@ -917,7 +917,7 @@ def booking_error(lang):
 
 
 def massage_booking_confirmation_request_text(lang, date, time, massage_type, duration):
-    date_str = utils.convert_date_to_str(date)
+    date_str = utils.convert_date_to_str(date, lang)
     massage_str = massage_dict[lang][massage_type]
     if lang == "english":
         return (f"**Confirm your booking by replying 'yes'/'ok'**\n"
@@ -1053,7 +1053,7 @@ def user_details_collecting_error(lang, state_data):
             continue
 
         if key == 'date' and value != 'None':
-            value = utils.convert_date_to_str(value)
+            value = utils.convert_date_to_str(value, lang)
 
         key_text = value + ' ✅' if value != 'None' else texts[lang][key]
         text += f"{n}. {key_text}\n"

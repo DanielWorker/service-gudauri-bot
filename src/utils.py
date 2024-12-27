@@ -41,11 +41,17 @@ def combine_and_localize_datetime(date, time, utc=False):
         return localized_date_time
 
 
-def convert_date_to_str(date_str):
-    months = [
-        'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
-        'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'
-    ]
+def convert_date_to_str(date_str, lang='russian'):
+    if lang == 'english':
+        months = [
+            'January', 'February', 'March', 'April', 'May', 'June',
+            'July', 'August', 'September', 'October', 'November', 'December'
+        ]
+    else:
+        months = [
+            'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
+            'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'
+        ]
 
     # Преобразуем строку в объект datetime
     date_obj = datetime.strptime(date_str, "%d/%m")
