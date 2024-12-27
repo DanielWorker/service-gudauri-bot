@@ -9,3 +9,5 @@ pytz==2024.2
 async-timeout==4.0.3
 APScheduler==3.10.4
 openai==1.55.3
+apify-client
+fabric==3.2.2
