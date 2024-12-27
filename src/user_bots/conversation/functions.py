@@ -49,7 +49,14 @@ class ConversationService(TGObject):
             # Exchange
             'exchange_info_request': self.handle_exchange_info_request,
             'exchange_booking_confirmation_request': self.handle_exchange_booking_confirmation_request,
-
+            # Ski Service
+            'ski_service_info_request': self.handle_ski_service_info_request,
+            'ski_booking_info_request': self.handle_ski_booking_info_request,
+            'ski_booking_confirmation_request': self.handle_ski_booking_confirmation_request,
+            # Cleaning
+            'cleaning_info_request': self.handle_cleaning_info_request,
+            'cleaning_booking_info_request': self.handle_cleaning_booking_info_request,
+            'cleaning_booking_confirmation_request': self.handle_cleaning_booking_confirmation_request,
         }
 
         if user.state in state_functions:
@@ -97,6 +104,8 @@ class ConversationService(TGObject):
             'paragliding': self.handle_paragliding_service,
             'snowbike_tour': self.handle_snowbike_service,
             'exchange': self.handle_exchange_service,
+            'ski_service': self.handle_ski_service,
+            'cleaning': self.handle_cleaning_service,
         }
 
         if service not in service_handlers:
@@ -805,3 +814,207 @@ class ConversationService(TGObject):
             pass
         else:
             return await self.handle_exchange_service()
+
+    async def handle_ski_service(self):
+        self.repo.update_user(
+            self.user_id,
+            state='ski_service_info_request',
+            state_data=None,
+        )
+
+        user = self.repo.find_user(self.user_id)
+        lang = user.lead.lang
+        text = tmp.ski_service_info_text(lang)
+        await self.respond(text)
+
+    async def handle_ski_service_info_request(self):
+        user = self.repo.find_user(self.user_id)
+        lang = user.lead.lang
+        response = api.extract_selected_ski_service(self.text, lang)
+
+        if response.get('is_request_canceled'):
+            return await self.all_services_menu()
+
+        response.pop("is_request_canceled", None)
+
+        if 'None' in response.values():
+            return await self.respond(tmp.booking_error(lang))
+
+        user.state_data = response
+        user.state_data.update({'date': 'None', 'time': 'None', 'name': 'None', 'phone_number': 'None', })
+
+        self.repo.update_user(
+            self.user_id,
+            state='ski_booking_info_request',
+            state_data=user.state_data
+        )
+
+        text = tmp.user_details_collecting_text(lang)
+        return await self.respond(text)
+
+    async def handle_ski_booking_info_request(self):
+        user = self.repo.find_user(self.user_id)
+        response = api.extract_user_info(self.text)
+        lang = user.lead.lang
+
+        if response.get('is_request_canceled'):
+            return await self.handle_ski_service()
+
+        response.pop("is_request_canceled", None)
+
+        for key, value in response.items():
+            if value != 'None' and value:
+                user.state_data[key] = response[key]
+
+        self.repo.update_user(
+            self.user_id,
+            state_data=user.state_data
+        )
+
+        if 'None' in user.state_data.values():
+            return await self.respond(tmp.user_details_collecting_error(lang, user.state_data))
+
+        date = user.state_data.get('date')
+        time = user.state_data.get('time')
+
+        try:
+            due_date = utils.combine_and_localize_datetime(date, time)
+        except ValueError:
+            return await self.respond(tmp.booking_error(lang))
+
+        if not (9 <= due_date.hour <= 18):
+            return await self.respond(tmp.invalid_ski_service_booking_time_error(lang))
+
+        self.repo.update_user(self.user_id, state='ski_booking_confirmation_request')
+
+        text = tmp.booking_confirmation_request_text(lang)
+        return await self.respond(text)
+
+    async def handle_ski_booking_confirmation_request(self):
+        user = self.repo.find_user(self.user_id)
+        lang = user.lead.lang
+        response = api.analyze_answer_yes_no(self.text)
+        answer = response['answer']
+
+        if response.get('is_request_canceled'):
+            return await self.handle_ski_service()
+
+        if answer:
+            date = user.state_data.get('date')
+            time = user.state_data.get('time')
+            name = user.state_data.get('name')
+            phone_number = user.state_data.get('phone_number')
+            selected_service = user.state_data.get('selected_service')
+
+            first_text = tmp.ski_booking_text(user, date, time, name, phone_number, selected_service)
+            await stg.bot.send_message(stg.paragliding_chat_id, first_text)
+
+            second_text = tmp.ski_booking_confirmed_text(lang)
+            await self.respond(second_text)
+
+            return await self.all_services_menu()
+        elif answer is None:
+            pass
+        else:
+            return await self.handle_ski_service()
+
+    # Cleaning Service
+    async def handle_cleaning_service(self):
+        self.repo.update_user(
+            self.user_id,
+            state='cleaning_info_request',
+            state_data=None,
+        )
+
+        user = self.repo.find_user(self.user_id)
+        lang = user.lead.lang
+        text = tmp.cleaning_service_info_text(lang)
+        await self.respond(text)
+
+    async def handle_cleaning_info_request(self):
+        user = self.repo.find_user(self.user_id)
+        lang = user.lead.lang
+        response = api.extract_selected_cleaning_service(self.text, lang)
+
+        if response.get('is_request_canceled'):
+            return await self.all_services_menu()
+
+        response.pop("is_request_canceled", None)
+
+        if 'None' in response.values():
+            return await self.respond(tmp.booking_error(lang))
+
+        user.state_data = response
+        user.state_data.update({'date': 'None', 'building': 'None', 'apartment': 'None', 'name': 'None', 'phone_number': 'None', })
+
+        self.repo.update_user(
+            self.user_id,
+            state='cleaning_booking_info_request',
+            state_data=user.state_data
+        )
+
+        text = tmp.cleaning_details_collecting_text(lang)
+        return await self.respond(text)
+
+    async def handle_cleaning_booking_info_request(self):
+        user = self.repo.find_user(self.user_id)
+        response = api.extract_cleaning_appointment_info(self.text)
+        lang = user.lead.lang
+
+        if response.get('is_request_canceled'):
+            return await self.handle_cleaning_service()
+
+        response.pop("is_request_canceled", None)
+
+        for key, value in response.items():
+            if value != 'None' and value:
+                user.state_data[key] = response[key]
+
+        self.repo.update_user(
+            self.user_id,
+            state_data=user.state_data
+        )
+
+        if 'None' in user.state_data.values():
+            return await self.respond(tmp.cleaning_details_collecting_error(lang, user.state_data))
+
+        date = user.state_data.get('date')
+
+        try:
+            due_date = utils.combine_and_localize_datetime(date)
+        except ValueError:
+            return await self.respond(tmp.booking_error(lang))
+
+        self.repo.update_user(self.user_id, state='cleaning_booking_confirmation_request')
+
+        text = tmp.booking_confirmation_request_text(lang)
+        return await self.respond(text)
+
+    async def handle_cleaning_booking_confirmation_request(self):
+        user = self.repo.find_user(self.user_id)
+        lang = user.lead.lang
+        response = api.analyze_answer_yes_no(self.text)
+        answer = response['answer']
+
+        if response.get('is_request_canceled'):
+            return await self.handle_cleaning_service()
+
+        if answer:
+            date = user.state_data.get('date')
+            building = user.state_data.get('building')
+            apartment = user.state_data.get('apartment')
+            name = user.state_data.get('name')
+            phone_number = user.state_data.get('phone_number')
+            selected_service = user.state_data.get('selected_service')
+
+            first_text = tmp.cleaning_booking_text(user, date, building, apartment, name, phone_number, selected_service)
+            await stg.bot.send_message(stg.paragliding_chat_id, first_text)
+
+            second_text = tmp.cleaning_booking_confirmed_text(lang)
+            await self.respond(second_text)
+
+            return await self.all_services_menu()
+        elif answer is None:
+            pass
+        else:
+            return await self.handle_cleaning_service()

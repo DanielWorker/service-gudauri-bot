@@ -1075,6 +1075,212 @@ def extract_exchange_info(user_input):
     return extracted_details
 
 
+def extract_selected_ski_service(user_input, lang):
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {
+                "role": "system",
+                "content": (
+                    "You are an assistant that extracts the service chosen by the user from their input. "
+                    "The user can choose one of the following services: "
+                    "1. Edge sharpening + waxing "
+                    "2. Base repair. "
+                    "Или на русском"
+                    "1. Заточка кантов + парафин "
+                    "2. Ремонт скользящей поверхности. "
+                    "The user response can be either in Russian or in English. "
+                    f"Return response in the following language: {lang}. "
+                    "You need to analyze the input and return a JSON object with the key 'selected_service' "
+                    "which will contain the exact service chosen by the user. "
+                    "If the user's choice is unclear or does not match one of the offered options, return 'None'. "
+                    
+                    "Examples of valid inputs: "
+                    "- 'Edge sharpening + waxing', "
+                    "- 'Sliding surface repair', "
+                    "- 'Заточка кантов + парафин', "
+                    "- 'Ремонт скользящей поверхности', "
+                    "- '1', "
+                    "- '2', "
+                    "- 'Sharpening and waxing', "
+                    "- 'Repair'. "
+                    "Examples of invalid inputs: "
+                    "'Any service', or no clear indication of the option."
+                )
+            },
+            {
+                "role": "user",
+                "content": f"{user_input}"
+            }
+        ],
+        response_format={
+            "type": "json_schema",
+            "json_schema": {
+                "name": "get_selected_service",
+                "schema": {
+                    "type": "object",
+                    "properties": {
+                        "selected_service": {
+                            "description": "The exact service chosen by the user, or 'None' if unclear or not provided.",
+                            "type": ["string", "null"]
+                        },
+                        **default_properties
+                    },
+                    "required": ["selected_service"],
+                    "additionalProperties": False
+                }
+            }
+        }
+    )
+
+    result = response.choices[0].message.content
+    return json.loads(result)
+
+
+def extract_selected_cleaning_service(user_input, lang):
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {
+                "role": "system",
+                "content": (
+                    "Вы — помощник, который извлекает выбранную пользователем услугу уборки из его ввода. "
+                    "Пользователь может выбрать одну из следующих услуг: "
+                    "1. Уборка Студия "
+                    "2. Уборка Студия генеральная "
+                    "3. Уборка в Квартире больше 30м2 "
+                    "4. Квартира > 30м2 генеральная уборка "
+                    "5. Квартира больше 60м2 "
+                    "6. Квартира > 60м2 генеральная "
+                    "Or in English: "
+                    "1. Studio Cleaning"
+                    "2.	Studio Deep Cleaning"
+                    "3.	Apartment Cleaning (over 30m²)"
+                    "4.	Apartment Deep Cleaning (over 30m²)"
+                    "5.	Apartment Cleaning (over 60m²)"
+                    "6.	Apartment Deep Cleaning (over 60m²)"
+                    "Ответ пользователя может быть на русском или английском языке. "
+                    "The user response can be either in Russian or in English. "
+                    f"Return response in the following language: {lang}. "
+                    "Вам нужно проанализировать ввод и вернуть объект JSON с ключом 'selected_service', "
+                    "который будет содержать точный текст, указанный пользователем. "
+                    "Если выбор пользователя неясен или не соответствует одной из предложенных опций, верните 'None'. "
+                    "Примеры корректных вариантов ввода: "
+                    "- 'Уборка Студия' "
+                    "- 'Studio Cleaning' "
+                    "- 'Квартира > 30м2 генеральная' "
+                    "- 'Flat > 30m2 general cleaning' "
+                    "- '1' "
+                    "- '2', и так далее "
+                    "Примеры некорректных вариантов ввода: "
+                    "'Любая уборка', или нет четкого указания опции."
+                )
+            },
+            {
+                "role": "user",
+                "content": f"{user_input}"
+            }
+        ],
+        response_format={
+            "type": "json_schema",
+            "json_schema": {
+                "name": "get_selected_service",
+                "schema": {
+                    "type": "object",
+                    "properties": {
+                        "selected_service": {
+                            "description": "The exact cleaning service chosen by the user, or 'None' if unclear or not provided.",
+                            "type": ["string", "null"]
+                        }
+                    },
+                    "required": ["selected_service"],
+                    "additionalProperties": False
+                }
+            }
+        }
+    )
+
+    result = response.choices[0].message.content
+    return json.loads(result)
+
+
+def extract_cleaning_appointment_info(user_input):
+    phone_pattern = r"\+?\d{1,3}[-\s]?\(?\d{1,5}\)?[-\s]?[\d\s\-]{6,13}"
+
+    match = re.search(phone_pattern, user_input)
+    phone_number = match.group(0).strip() if match else 'None'
+
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {
+                "role": "system",
+                "content": (
+                    "Ты помощник, который извлекает данные пользователя для записи на уборку. "
+                    "Пользователь может предоставить следующие данные: "
+                    "1. Дата записи. "
+                    "2. Дом или корпус. "
+                    "3. Номер апартаментов. "
+                    "4. Имя пользователя. "
+                    "5. Номер телефона. "
+                    "Твоя задача: извлечь эти данные и вернуть их в формате JSON. "
+                    "Если пользователь не указал какой-то из пунктов, верни 'None' для этого ключа. "
+                    "Response can be retrieved in English or Russian. "
+                    "Примеры: "
+                    "- '4 января, корпус А, апартаменты 123, Иван, +995551234567' "
+                    "- '5/01, дом Б, квартира 45, Анна, +487651234567' "
+                    "- '5 January, Block C, Apartment 78, John, +1234567890'. "
+                    "- '4 января\nF4\n323\nСаша\n+995551234567'. "
+                    "Верни результат в формате JSON с ключами 'date', 'building', 'apartment', 'name', 'phone_number'."
+                )
+            },
+            {
+                "role": "user",
+                "content": f"{user_input}"
+            }
+        ],
+        response_format={
+            "type": "json_schema",
+            "json_schema": {
+                "name": "get_cleaning_details",
+                "schema": {
+                    "type": "object",
+                    "properties": {
+                        "date": {
+                            "description": "Дата записи в формате DD/MM или 'None', если не указана.",
+                            "type": ["string", "null"]
+                        },
+                        "building": {
+                            "description": "Название дома/корпуса, или 'None', если не указано.",
+                            "type": ["string", "null"]
+                        },
+                        "apartment": {
+                            "description": "Номер апартаментов, или 'None', если не указан.",
+                            "type": ["string", "null"]
+                        },
+                        "name": {
+                            "description": "Имя пользователя, или 'None', если не указано или некорректно.",
+                            "type": ["string", "null"]
+                        },
+                        "phone_number": {
+                            "description": "Номер телефона в международном формате, или 'None', если номер не указан или некорректен.",
+                            "type": ["string", "null"]
+                        }
+                    },
+                    "required": ["date", "building", "apartment", "name", "phone_number"],
+                    "additionalProperties": False
+                }
+            }
+        }
+    )
+
+    result = response.choices[0].message.content
+    extracted_details = json.loads(result)
+    extracted_details["phone_number"] = phone_number
+
+    return extracted_details
+
+
 default_properties = {
     "is_request_canceled": {
         "description": "True if the response contains a cancellation request or 'menu'/'меню' command in any register, otherwise False.",
@@ -1084,5 +1290,5 @@ default_properties = {
 
 # x = extract_selected_snowmobile_tour('1 person')
 # x = extract_rental_equipment_details('1 2 2 3 4')
-x = extract_rental_equipment_details('1 2 2 3 4\n')
+x = extract_selected_cleaning_service('1', 'russian')
 print(x)

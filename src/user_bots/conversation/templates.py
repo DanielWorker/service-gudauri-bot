@@ -994,9 +994,9 @@ def user_details_collecting_text(lang):
     texts = {
         "english": """
 1. What date should we book you for?
-2.	Time? 10:00 - 17:00
-3.	What is your name?
-4.	What is your phone number?
+2. Time?
+3. What is your name?
+4. What is your phone number?
 
 **This is needed for the pilot to contact you.**
 
@@ -1009,7 +1009,7 @@ Sasha
 __To return to the menu, type 'menu' / 'cancel' / 'no'__""",
         "russian": """
 1. На какую дату вас записать?
-2. Время? 10.00 - 17.00
+2. Время?
 3. Как вас зовут?
 4. Какой у вас номер телефона?
 
@@ -1253,8 +1253,213 @@ def exchange_booking_text(user, amount, date, time, name, phone_number):
             f"💵 ${amount}\n"
             f"🧍 {name}\n"
             f"📞 {phone_number}")
-
 # ======== Currency Exchange =======
+
+
+# ======== Ski Service =======
+def ski_service_info_text(lang):
+    if lang == 'english':
+        return """**🛠Equipment Repair**
+🕒 9:00 AM - 6:30 PM 🕒
+
+Choose a service:
+
+1. Edge sharpening + waxing - 30₾
+2. Sliding surface repair - 40₾
+
+We are located at:
+📍 New Gudauri, 42.469758, 44.491701  
+Underground parking, beneath the open pool ([Link](https://yandex.com/maps/-/CHEKYI5W))
+
+"__To return to the menu, type 'menu' / 'cancel' / 'no'__"""
+    else:
+        return """**🛠Ремонт снаряжения**
+🕒 9.00 - 18.30 🕒
+
+Выберите услугу
+
+1. Заточка кантов + парафин - 30₾
+2. Ремонт скользящей поверхности - 40₾
+
+Мы находимся:
+📍 Нью-Гудаури, 42.469758, 44.491701
+Подземная парковка, под открытым бассейном ([Ссылка](https://yandex.com/maps/-/CHEKYI5W))
+
+__Для возврата в меню напишите 'меню' / 'отмена' / 'нет'__"""
+
+
+def ski_service_booking_info_text(lang):
+    if lang == "english":
+        return "Choose a service for booking:"
+    else:
+        return """
+1. Укажите дату
+2. Время визита
+3. Как вас зовут?
+
+Пример (пишите в столбик):
+4 января
+17 00
+Ярослав"""
+
+
+def invalid_ski_service_booking_time_error(lang):
+    if lang == "english":
+        return "Invalid booking time. Please choose a time that is within 10:00 - 17:00"
+    else:
+        return "Неверное время бронирования. Пожалуйста, выберите время, которое находится в пределах 10:00 - 17:00"
+
+
+def ski_booking_confirmed_text(lang):
+    if lang == "english":
+        return (f"**🎉 Your booking is confirmed!**\n"
+                f"Please pay in cash (₾/$)")
+    else:
+        return (f"**🎉 Ваша запись подтверждена!**\n"
+                f"Пожалуйста, оплатите наличными (₾/$)")
+
+
+def ski_booking_text(user, date, time, name, phone_number, selected_service):
+    user_mention = utils.get_user_mention(user.user_id, user.full_name)
+    username = f' | @{user.username}' if user.username else ''
+    date_str = utils.convert_date_to_str(date)
+
+    return (f"🆕 Заявка: Ремонт Снаряжения\n\n"
+            f"👤 {user_mention}{username}\n"
+            f"📅 {date_str} {time}\n\n"
+            f"🎿 {selected_service}\n"
+            f"🧍 {name}\n"
+            f"📞 {phone_number}")
+# ======== Ski Service =======
+
+
+# ======== Cleaning =======
+def cleaning_service_info_text(lang):
+    if lang == "english":
+        return """
+**🧹 Cleaning Services in New Gudauri**
+
+Choose a service:
+
+1. Studio - 100₾  
+2. Studio (Deep Cleaning) - 200₾  
+3. Apartment over 30m² - 150₾  
+4. Apartment over 30m² (Deep Cleaning) - 250₾  
+5. Apartment over 60m² - 200₾  
+6. Apartment over 60m² (Deep Cleaning) - 300₾  
+
+"__To return to the menu, type 'menu' / 'cancel' / 'no'__"""
+    else:
+        return """
+**🧹 Уборка по Нью-Гудаури**
+
+Выберите услугу:
+
+1. Студия - 100₾
+2. Студия генеральная - 200₾
+3. Квартира больше 30м2 - 150₾
+4. Квартира > 30м2 генеральная - 250₾
+5. Квартира больше 60м2 - 200₾
+6. Квартира > 60м2 генеральная - 300₾
+
+__Для возврата в меню напишите 'меню' / 'отмена' / 'нет'__"""
+
+
+def cleaning_details_collecting_text(lang):
+    if lang == 'english':
+        return """
+1. What date should we book you for?
+2. Building/Block?
+3. Apartment number?
+4. What is your name?
+5. What is your phone number?
+
+**Example (write in a column):**
+January 4
+F4
+323
+Sasha
++9955513437122
+
+"__To return to the menu, type 'menu' / 'cancel' / 'no'__"""
+    else:
+        return """
+1. На какую дату вас записать?
+2. Дом/корпус?
+3. Номер апартаментов?
+4. Как вас зовут?
+5. Какой у вас номер телефона?
+
+**Пример (пишите в столбик):**
+4 января
+F4
+323
+Саша
++9955513437122
+
+__Для возврата в меню напишите 'меню' / 'отмена' / 'нет'__"""
+
+
+def cleaning_details_collecting_error(lang, state_data):
+    texts = {
+        'english': {
+            'date': 'What date should we book you for?',
+            'building': 'Building/Block?',
+            'apartment': 'Apartment number?',
+            'name': 'What is your name?',
+            'phone_number': 'What is your phone number?',
+            'error_text': 'Oops! Something was filled in incorrectly, please try again:'
+        },
+        'russian': {
+            'date': 'На какую дату вас записать?',
+            'building': '2. Дом/корпус?',
+            'apartment': '3. Номер апартаментов?',
+            'name': 'Как вас зовут?',
+            'phone_number': 'Какой у вас номер телефона?',
+            'error_text': 'Ой! Похоже, что-то заполнено неверно. Пожалуйста, попробуйте снова:'
+        }
+    }
+
+    title = texts[lang]['error_text']
+    text = f"{title}\n\n"
+    n = 1
+    for key, value in state_data.items():
+        if key not in texts[lang]:
+            continue
+
+        if key == 'date' and value != 'None':
+            value = utils.convert_date_to_str(value, lang)
+
+        key_text = value + ' ✅' if value != 'None' else texts[lang][key]
+        text += f"{n}. {key_text}\n"
+        n += 1
+
+    return text
+
+
+def cleaning_booking_text(user, date, building, apartment, name, phone_number, selected_service):
+    user_mention = utils.get_user_mention(user.user_id, user.full_name)
+    username = f' | @{user.username}' if user.username else ''
+    date_str = utils.convert_date_to_str(date)
+
+    return (f"🆕 Заявка: Уборка\n\n"
+            f"👤 {user_mention}{username}\n"
+            f"📅 {date_str}\n\n"
+            f"🧹 {selected_service}\n"
+            f"🏘 {building} {apartment}\n"
+            f"🧍 {name}\n"
+            f"📞 {phone_number}")
+
+
+def cleaning_booking_confirmed_text(lang):
+    if lang == "english":
+        return (f"**🎉 Your booking is confirmed!**\n"
+                f"Please pay in cash (₾/$)")
+    else:
+        return (f"**🎉 Ваша запись подтверждена!**\n"
+                f"Пожалуйста, оплатите наличными (₾/$)")
+
+# ======== Cleaning =======
 
 
 # ======== Utils =======

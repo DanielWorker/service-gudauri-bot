@@ -23,7 +23,7 @@ def get_localized_datetime(datetime_obj=None):
     return pytz.utc.localize(datetime_obj).astimezone(timezone)
 
 
-def combine_and_localize_datetime(date, time, utc=False):
+def combine_and_localize_datetime(date, time="00:00", utc=False):
     current_year = datetime.now().year
 
     dt_str = f"{current_year}/{date} {time}"

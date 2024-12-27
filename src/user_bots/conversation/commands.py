@@ -57,6 +57,13 @@ class ConversationCommands(TGObject):
             # Exchange
             'exchange_info_request': self.functions.all_services_menu,
             'exchange_booking_confirmation_request': self.functions.handle_exchange_service,
+            # Ski service
+            'ski_service_info_request': self.functions.all_services_menu,
+            'ski_booking_confirmation_request': self.functions.handle_ski_service,
+            # Cleaning
+            'cleaning_info_request': self.functions.all_services_menu,
+            'cleaning_booking_info_request': self.functions.handle_cleaning_service,
+            'cleaning_booking_confirmation_request': self.functions.handle_cleaning_service,
 
         }
 
