@@ -735,6 +735,7 @@ def extract_booking_details_for_massage(user_input):
     result = response.choices[0].message.content
     return json.loads(result)
 
+
 def extract_massage_details(user_input):
     response = client.chat.completions.create(
         model="gpt-4o-mini",
@@ -754,7 +755,7 @@ def extract_massage_details(user_input):
                     "You will analyze the input and return a JSON object with the keys 'massage_type' and 'duration'. "
                     "The 'massage_type' should be one of the available types: "
                     "['relaxing', 'classic', 'sports', 'therapeutic_session', 'balinese', 'anti_cellulite', 'back_and_legs'], "
-                    "or 'undefined' if it's not specified correctly. "
+                    "or 'None' if it's not specified correctly. "
                     "The 'duration' should be one of the available durations (1, 1.5, or 2), or 'None' if not specified. "
                     "Example input: 'Лечебный 2ч', 'Расслабляющий 1', 'Anti Cellulite\n1h', 'Back and legs\n1'."
                 )
@@ -772,9 +773,9 @@ def extract_massage_details(user_input):
                     "type": "object",
                     "properties": {
                         "massage_type": {
-                            "description": "The type of massage requested by the user, or 'undefined' if not provided.",
+                            "description": "The type of massage requested by the user, or 'None' if not provided.",
                             "type": "string",
-                            "enum": ["relaxing", "classic", "sports", "therapeutic_session", "balinese", "anti_cellulite", "back_and_legs", "undefined"]
+                            "enum": ["relaxing", "classic", "sports", "therapeutic_session", "balinese", "anti_cellulite", "back_and_legs", "None"]
                         },
                         "duration": {
                             "description": "The duration of the massage requested (1h or 1.5h or 2h), or 'None' if not provided.",
