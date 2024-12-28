@@ -57,6 +57,9 @@ class ConversationService(TGObject):
             'cleaning_info_request': self.handle_cleaning_info_request,
             'cleaning_booking_info_request': self.handle_cleaning_booking_info_request,
             'cleaning_booking_confirmation_request': self.handle_cleaning_booking_confirmation_request,
+            # Rent Flat
+            'rent_flat_info_request': self.handle_rent_flat_info_request,
+            'rent_flat_booking_confirmation_request': self.handle_rent_flat_booking_confirmation_request,
         }
 
         if user.state in state_functions:
@@ -106,6 +109,7 @@ class ConversationService(TGObject):
             'exchange': self.handle_exchange_service,
             'ski_service': self.handle_ski_service,
             'cleaning': self.handle_cleaning_service,
+            'rent_flat': self.handle_rent_flat_service,
         }
 
         if service not in service_handlers:
@@ -1018,3 +1022,65 @@ class ConversationService(TGObject):
             pass
         else:
             return await self.handle_cleaning_service()
+
+    async def handle_rent_flat_service(self):
+        self.repo.update_user(
+            self.user_id,
+            state='rent_flat_info_request',
+            state_data=None,
+        )
+
+        user = self.repo.find_user(self.user_id)
+        lang = user.lead.lang
+        text = tmp.rent_flat_service_info_text(lang)
+        await self.respond(text)
+
+    async def handle_rent_flat_info_request(self):
+        user = self.repo.find_user(self.user_id)
+        lang = user.lead.lang
+        response = api.extract_user_info(self.text)
+
+        if response.get('is_request_canceled'):
+            return await self.all_services_menu()
+
+        response.pop("is_request_canceled", None)
+        response.pop("date", None)
+        response.pop("time", None)
+
+        if 'None' in response.values():
+            return await self.respond(tmp.booking_error(lang))
+
+        self.repo.update_user(
+            self.user_id,
+            state='rent_flat_booking_confirmation_request',
+            state_data=response
+        )
+
+        text = tmp.booking_confirmation_request_text(lang)
+        return await self.respond(text)
+
+    async def handle_rent_flat_booking_confirmation_request(self):
+        user = self.repo.find_user(self.user_id)
+        lang = user.lead.lang
+        response = api.analyze_answer_yes_no(self.text)
+        answer = response['answer']
+
+        if response.get('is_request_canceled'):
+            return await self.handle_rent_flat_service()
+
+        if answer:
+            name = user.state_data.get('name')
+            phone_number = user.state_data.get('phone_number')
+
+            first_text = tmp.rent_flat_booking_text(user, name, phone_number)
+            await stg.bot.send_message(stg.rent_flat_chat_id, first_text)
+
+            second_text = tmp.rent_flat_booking_confirmed_text(lang)
+            await self.respond(second_text)
+
+            return await self.all_services_menu()
+        elif answer is None:
+            pass
+        else:
+            return await self.handle_rent_flat_service()
+

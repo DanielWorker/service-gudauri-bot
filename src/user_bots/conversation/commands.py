@@ -64,6 +64,9 @@ class ConversationCommands(TGObject):
             'cleaning_info_request': self.functions.all_services_menu,
             'cleaning_booking_info_request': self.functions.handle_cleaning_service,
             'cleaning_booking_confirmation_request': self.functions.handle_cleaning_service,
+            # Rent Flat
+            'rent_flat_info_request': self.functions.all_services_menu,
+            'rent_flat_booking_confirmation_request': self.functions.handle_rent_flat_service,
 
         }
 

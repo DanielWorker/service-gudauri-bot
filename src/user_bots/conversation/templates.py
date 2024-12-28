@@ -1462,6 +1462,51 @@ def cleaning_booking_confirmed_text(lang):
 # ======== Cleaning =======
 
 
+# ======== Rent Flat =======
+def rent_flat_service_info_text(lang):
+    if lang == "english":
+        return """**🏠 Apartments in New Gudauri**
+Leave a request:
+
+1. What is your name?  
+2. What is your phone number?  
+
+**Example (write in separate lines):**  
+Sasha  
++9955513437122"""
+    else:
+        return """**🏠 Апартаменты в Нью-Гудаури**
+Оставьте заявку:
+
+1. Как вас зовут?
+2. Какой у вас номер телефона?
+
+**Пример (пишите в столбик):**
+Саша
++9955513437122"""
+
+
+def rent_flat_booking_text(user, name, phone_number):
+    user_mention = utils.get_user_mention(user.user_id, user.full_name)
+    username = f' | @{user.username}' if user.username else ''
+
+    return (f"🆕 Заявка: Аренда квартиры\n\n"
+            f"👤 {user_mention}{username}\n"
+            f"🧍 {name}\n"
+            f"📞 {phone_number}")
+
+
+def rent_flat_booking_confirmed_text(lang):
+    if lang == "english":
+        return (
+            f"🎉Contacts have been sent. Please wait, we will contact you to find suitable apartments in New Gudauri.\n"
+            f"**Please pay in cash (₾/$)**")
+    else:
+        return (f"🎉Контакты отправлены, ожидайте, мы свяжемся с вами и подберем вам апартаменты в Нью-Гудаури.\n"
+                f"**Пожалуйста, оплатите наличными (₾/$)**")
+# ======== Rent Flat =======
+
+
 # ======== Utils =======
 def has_invalid_items(selected_items, items_dict):
     selected_item_ids = [item['number'] for item in selected_items]
