@@ -83,4 +83,4 @@ def get_currency_rate():
     items_iterator = client.dataset(run["defaultDatasetId"]).iterate_items()
     first_item = next(items_iterator, None)
     if first_item:
-        return first_item["rate"] - 0.16
+        return first_item["rate"] - 0.16 if first_item["rate"] else 2.69  # fixme todo

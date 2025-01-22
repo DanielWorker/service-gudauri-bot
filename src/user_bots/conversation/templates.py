@@ -374,7 +374,7 @@ def instructor_booking_error(lang, state_data):
         if key not in texts[lang]:
             continue
 
-        key_text = value + ' ✅' if value != 'None' else texts[lang][key]
+        key_text = str(value) + ' ✅' if value != 'None' else texts[lang][key]
         text += f'{n}. {key_text}\n'
         n += 1
 
@@ -496,7 +496,7 @@ def instructor_booking_user_data_request_error(lang, state_data):
         if key not in texts[lang]:
             continue
 
-        key_text = value + ' ✅' if value != 'None' else texts[lang][key]
+        key_text = str(value) + ' ✅' if value != 'None' else texts[lang][key]
         text += f"{n}. {key_text}\n"
         n += 1
 
@@ -794,7 +794,7 @@ def food_order_delivery_details_request_error(lang, state_data):
         if key not in texts[lang]:
             continue
 
-        key_text = value + ' ✅' if value != 'None' else texts[lang][key]
+        key_text = str(value) + ' ✅' if value != 'None' else texts[lang][key]
         text += f"{n}. {key_text}\n"
         n += 1
 
@@ -1055,7 +1055,7 @@ def user_details_collecting_error(lang, state_data):
         if key == 'date' and value != 'None':
             value = utils.convert_date_to_str(value, lang)
 
-        key_text = value + ' ✅' if value != 'None' else texts[lang][key]
+        key_text = str(value) + ' ✅' if value != 'None' else texts[lang][key]
         text += f"{n}. {key_text}\n"
         n += 1
 
