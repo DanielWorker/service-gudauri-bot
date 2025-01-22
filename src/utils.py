@@ -71,16 +71,17 @@ def get_path_to_asset(image_name):
 
 
 def get_currency_rate():
-    client = ApifyClient(stg.APIFY_TOKEN)
-
-    run_input = {
-        "from": "USD",
-        "to": "GEL",
-    }
-
-    run = client.actor("bot_kevin/google-currency-rate").call(run_input=run_input)
-
-    items_iterator = client.dataset(run["defaultDatasetId"]).iterate_items()
-    first_item = next(items_iterator, None)
-    if first_item:
-        return first_item["rate"] - 0.16 if first_item["rate"] else 2.69  # fixme todo
+    return 2.7
+    # client = ApifyClient(stg.APIFY_TOKEN)
+    #
+    # run_input = {
+    #     "from": "USD",
+    #     "to": "GEL",
+    # }
+    #
+    # run = client.actor("bot_kevin/google-currency-rate").call(run_input=run_input)
+    #
+    # items_iterator = client.dataset(run["defaultDatasetId"]).iterate_items()
+    # first_item = next(items_iterator, None)
+    # if first_item:
+    #     return first_item["rate"] - 0.16 if first_item["rate"] else 2.69  # fixme todo
