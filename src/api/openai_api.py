@@ -1291,5 +1291,5 @@ default_properties = {
 
 # x = extract_selected_snowmobile_tour('1 person')
 # x = extract_rental_equipment_details('1 2 2 3 4')
-x = extract_user_info('Саша\n+9955513437122')
-print(x)
+# x = extract_user_info('Саша\n+9955513437122')
+# print(x)
