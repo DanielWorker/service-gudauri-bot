@@ -43,7 +43,7 @@ else:
     massage_chat_id = -1002269031500
     cleaning_chat_id = -1002322181612
     rent_flat_chat_id = -1002254838245
-    transfer_chat_id = -1007197611297
+    transfer_chat_id = -1004753027288
 
 
 logger = logging.getLogger("telegram")
