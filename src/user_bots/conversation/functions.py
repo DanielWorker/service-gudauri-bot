@@ -1104,7 +1104,7 @@ class ConversationService(TGObject):
 
         first_text = tmp.transfer_booking_text(user, route_number, people_count, equipment_bags, luggage_bags, car_ready_time, phone_number)
 
-        await stg.bot.get_participants(stg.transfer_chat_id)
+        await stg.bot.get_input_entity(stg.transfer_chat_id)
         await stg.bot.send_message(stg.transfer_chat_id, first_text)
 
         second_text = tmp.transfer_booking_confirmed_text(lang)
