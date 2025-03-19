@@ -32,6 +32,7 @@ if int(TEST_MODE):
     massage_chat_id = -1001826495601
     cleaning_chat_id = -1001826495601
     rent_flat_chat_id = -1001826495601
+    transfer_chat_id = -1001826495601
 else:
     log_dir = '/home/service-gudauri-bot/logs'
     path_to_sessions = '/home/service-gudauri-bot/sessions/'
@@ -42,6 +43,7 @@ else:
     massage_chat_id = -1002269031500
     cleaning_chat_id = -1002322181612
     rent_flat_chat_id = -1002254838245
+    transfer_chat_id = -1004753027288
 
 
 logger = logging.getLogger("telegram")

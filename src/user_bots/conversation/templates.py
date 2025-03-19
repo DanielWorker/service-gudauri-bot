@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 from src import utils
 
 
@@ -19,9 +21,9 @@ def all_services_text(lang):
 
 1. 🎿Rent Ski & Board 
 2. ⛷Instructor    
-3. 🍔Food & Coffee
+3. 🍔Food
 4. 💆Massage                
-5. 🚕Transfer & Taxi
+5. 🚕Transfer
 6. 🪂Paragliding
 7. 🏍Snowbike tour     
 8. 💵Exchange       
@@ -39,9 +41,9 @@ Road status 🟢🔴
 
 1. 🎿Прокат лыж & Сноубордов
 2. ⛷Инструктор    
-3. 🍔Еда & Кофе
+3. 🍔Еда
 4. 💆Массаж
-5. 🚕Трансфер & Такси
+5. 🚕Трансфер
 6. 🪂Полет на параплане
 7. 🏍Тур на снегоходе
 8. 💵Обмен валют       
@@ -124,10 +126,13 @@ def rent_equipment_questions_text(lang):
 def no_equipment_selected_error(lang):
     if lang == 'english':
         return ("Oops! You haven't selected any equipment yet. Please choose something before placing your order.\n"
-                "__Order example: 1 1 2 4__")
+                "**Example:**\n"
+                "1 3 4\n"
+                "3 days  16.01 - 19.01")
     else:
-        return ("Ой! Вы еще не выбрали ни одно блюдо или кофе. Пожалуйста, выберите что-нибудь перед тем, как сделать заказ.\n"
-                "__Пример заказа: 1 1 2 4__")
+        return ("Ой! Вы еще не выбрали ни одно снаряжение или одежду. Пожалуйста, выберите что-нибудь."
+                "**Пример:**\n"
+                "3 суток 16.01 - 19.01")
 
 
 def rent_equipment_error(lang):
@@ -213,89 +218,82 @@ def equipment_booking_confirmed_text(lang):
 # ======== Hire Instructor ========
 def hire_instructor_info_text(lang):
     if lang == "english":
-        return """**🗻 Ski and Snowboard Lessons in Gudauri with a Certified Instructor**
-For beginners and those looking to improve their skills.
-
-**Lesson Prices:**
-• Starting from 105₾ (40$) per hour for a minimum of 2 hours.
-
+        return """
 ┌───────┐
     **👥 For Adults**
 └───────┘
-🕘 10:10 – 12:10 🕒
-- **250₾ (89$)** 2h for 1 person
-- **360₾ (128$)** 2h for a group of 2 people
-- **440₾ (157$)** 2h for a group of 3 people
+🕘 9:10 – 11:10 🕒
+- **250₾ (90$)** 2h for 1 person
+- **380₾ (136$)** 2h for a group of 2 people
+- **460₾ (165$)** 2h for a group of 3 people
 
-🕘 12:30 – 14:30 🕒
-- **230₾ (82$)** 2h for 1 person
-- **350₾ (124$)** 2h for a group of 2 people
-- **420₾ (149$)** 2h for a group of 3 people
+🕘 11:30 – 13:30 🕒
+- **240₾ (86$)** 2h for 1 person
+- **360₾ (129$)** 2h for a group of 2 people
+- **440₾ (149$)** 2h for a group of 3 people
 
-🕘 15:00 – 17:00 🕒
-- **210₾ (75$)** 2h for 1 person
-- **310₾ (110$)** 2h for a group of 2 people
-- **400₾ (142$)** 2h for a group of 3 people
+🕘 14:00 – 16:00 🕒
+- **220₾ (79$)** 2h for 1 person
+- **330₾ (118$)** 2h for a group of 2 people
+- **400₾ (144$)** 2h for a group of 3 people
 
 ┌────────┐
     **👨‍👩‍👦 For Children**
 └────────┘
-**Under 6 years old**: 1h lessons, individual only
-**Children 7+**: 2h lessons
+**Under 6 years old** individual lessons only
+**Children 7+** 2h lessons
 
 🕘 10:10 – 12:10 🕒
-- **250₾ (89$)** 2h for 1 child
-- **350₾ (124$)** 2h for a group of 2 children
+- **250₾ (90$)** 2h for 1 child
+- **380₾ (136$)** 2h for a group of 2 children
 
 🕘 12:30 – 14:30 🕒
-- **240₾ (86$)** 2h for 1 child
-- **350₾ (124$)** 2h for a group of 2 children
+- **250₾ (90$)** 2h for 1 child
+- **380₾ (136$)** 2h for a group of 2 children
 
 🕘 15:00 – 17:00 🕒
 - **240₾ (86$)** 2h for 1 child
-- **350₾ (124$)** 2h for a group of 2 children
-"""
+- **360₾ (129$)** 2h for a group of 2 children
+
+**🗻 Ski and Snowboard Lessons in Gudauri with a Certified Instructor**"""
     else:
-        return """**🗻 Обучение катанию в Гудаури на лыжах и сноуборде с сертифицированным инструктором**
-Для новичков и тех, кто хочет повысить свой уровень.
-
-**Стоимость занятий:**
-• От 105₾ (40$) за час при минимальной продолжительности в 2 часа.
-
+        return """
 ┌─────────┐
     **👥 Для взрослых**
 └─────────┘
-🕘 10:10 – 12:10 🕒
-- **250₾ (89$)** 2 часа 1 человек
-- **360₾ (128$)** 2ч группа 2 человека
-- **440₾ (157$)** 2ч группа 3 человека
+🕘 9:10 – 11:10 🕒
+- **250₾ (90$)** 2 часа 1 человек
+- **380₾ (136$)** 2ч группа 2 человека
+- **460₾ (165$)** 2ч группа 3 человека
 
-🕘 12:30 – 14:30 🕒
-- **230₾ (82$)** 2 часа 1 человек
-- **350₾ (124$)** 2ч группа 2 человека
-- **420₾ (149$)** 2ч группа 3 человека
+🕘 11:30 – 13:30 🕒
+- **240₾ (86$)** 2 часа 1 человек
+- **360₾ (129$)** 2ч группа 2 человека
+- **440₾ (149$)** 2ч группа 3 человека
 
-🕘 15:00 – 17:00 🕒
-- **210₾ (75$)** 2 часа 1 человек
-- **310₾ (110$)** 2ч группа 2 человека
-- **400₾ (142$)** 2ч группа 3 человека
+🕘 14:00 – 16:00 🕒
+- **220₾ (79$)** 2 часа 1 человек
+- **330₾ (118$)** 2ч группа 2 человека
+- **400₾ (144$)** 2ч группа 3 человека
 
 ┌───────┐
     **👨‍👩‍👦 Для детей**
 └───────┘ 
-**До 6 лет** занимаются 1ч и только индивидуально
+**До 6 лет** занимаются только индивидуально
 **Дети 7+** занимаются 2ч
 🕘 10:10 – 12:10 🕒
-- **250₾ (89$)** 2ч за 1 ребенка
-- **350₾ (124$)** 2ч за группу из 2 детей
+- **250₾ (90$)** 2ч за 1 ребенка
+- **380₾ (136$)** 2ч за группу из 2 детей
 
 🕘 12:30 – 14:30 🕒
-- **240₾ (86$)** 2ч за 1 ребенка
-- **350₾ (124$)** 2ч за группу из 2 детей
+- **250₾ (90$)** 2ч за 1 ребенка
+- **380₾ (136$)** 2ч за группу из 2 детей
 
 🕘 15:00 – 17:00 🕒
 - **240₾ (86$)** 2ч за 1 ребенка
-- **350₾ (124$)** 2ч за группу из 2 детей
+- **360₾ (129$)** 2ч за группу из 2 детей
+
+**🗻 Обучение катанию в Гудаури на лыжах и сноуборде с сертифицированным инструктором**
 """
 
 
@@ -352,7 +350,7 @@ def instructor_booking_error(lang, state_data):
             'dates': 'What dates should we book for you?',
             'time': 'What time should the lesson start?',
             'equipment': 'Skis or snowboard?',
-            'participants': 'How many people?',
+            'participants_count': 'How many people?',
             'age': 'Please specify the approximate age.',
             'error_text': 'Oops! Something was filled in incorrectly, please try again:'
         },
@@ -360,7 +358,7 @@ def instructor_booking_error(lang, state_data):
             'dates': 'На какие даты вас записать?',
             'time': 'Время начала занятия?',
             'equipment': 'Лыжи или сноуборд?',
-            'participants': 'Сколько людей?',
+            'participants_count': 'Сколько людей?',
             'age': 'Укажите примерный возраст.',
             'error_text': 'Ой! Похоже, что-то заполнено неверно. Пожалуйста, попробуйте снова:'
         }
@@ -503,45 +501,68 @@ def instructor_booking_user_data_request_error(lang, state_data):
     return text
 
 
-def instructor_booking_confirmation_text(lang, dates, time, equipment, participants, age, name, phone_number, place):
-    if lang == "english":
-        return (
-            f"**Confirm your booking by replying with 'yes'/'ok'**\n"
-            f"After that, we will connect you with an instructor.\n"
-            f"To cancel the booking, type 'cancel'.\n\n"
-            f"📅 {dates} | {time}\n"
-            f"👥 {participants} | {age}\n"
-            f"🎿 {equipment}\n\n"
-            f"👤 {name}\n"
-            f"📞 {phone_number}\n"
-            f"📍 {place}\n"
-        )
-    else:
-        return (
-            f"**Подтвердите вашу запись, написав “да”/“ага”**\n"
-            f"После этого мы свяжем вас с инструктором\n"
-            f"Для отмены бронирования напишите 'отмена'\n\n"
-            f"📅 {dates} | {time}\n"
-            f"👥 {participants} | {age}\n"
-            f"🎿 {equipment}\n\n"
-            f"👤 {name}\n"
-            f"📞 {phone_number}\n"
-            f"📍 {place}\n"
-        )
-
-
-def new_instructor_booking_text(user, dates, time, equipment, participants, age, name, phone_number, place):
+def new_instructor_booking_text(user, dates, start_time, equipment, participants_count, participants_type, age, name, phone_number, place):
     user_mention = utils.get_user_mention(user.user_id, user.full_name)
     username = f' | @{user.username}' if user.username else ''
+    participants_type_text = get_participants_type_text(int(participants_count), participants_type)
+    price = get_instructor_booking_price(start_time, participants_type, participants_count)
+    finish_time = add_hours(start_time, 2)
 
     return (f"🆕 Заявка на инструктора\n"
             f"👤 {user_mention}{username}\n\n"
-            f"📅 {dates} | {time}\n"
-            f"👥 {participants} | {age}\n"
-            f"🎿 {equipment}\n\n"
+            f"📅 {dates} | {start_time} - {finish_time}\n"
+            f"👥 {participants_type_text} | {age}\n"
+            f"🎿 {equipment}\n"
+            f"💵 {price}\n\n"
             f"👤 {name}\n"
             f"📞 {phone_number}\n"
             f"📍 {place}\n")
+
+
+def get_participants_type_text(participants_count, participants_type, lang='russian'):
+    if lang == "english":
+        if participants_count == 1:
+            return "1 adult" if participants_type == "adult" else "1 child"
+        else:
+            return f"{participants_count} adults" if participants_type == "adult" else f"{participants_count} children"
+    else:  # Русский язык
+        if participants_count == 1:
+            return "1 взрослый" if participants_type == "adult" else "1 ребенок"
+        else:
+            return f"{participants_count} взрослых" if participants_type == "adult" else f"{participants_count} детей"
+
+
+def get_instructor_booking_price(start_time, participants_type, people_count):
+    price_list = {
+        "adult": {
+            "9:10": {1: 250, 2: 380, 3: 460},
+            "11:30": {1: 240, 2: 360, 3: 440},
+            "14:00": {1: 220, 2: 330, 3: 400},
+        },
+        "child": {
+            "10:10": {1: 250, 2: 380},
+            "12:30": {1: 250, 2: 380},
+            "15:00": {1: 240, 2: 360},
+        },
+    }
+
+    default_text = 'Ошибка расчета цены'
+
+    if participants_type in price_list and start_time in price_list[participants_type]:
+        price = price_list[participants_type].get(start_time, {}).get(people_count, default_text)
+    else:
+        price = default_text
+
+    if price != default_text:
+        return f"{price} лари"
+
+    return default_text
+
+
+def add_hours(time_str, hours):
+    time_obj = datetime.strptime(time_str, "%H:%M")  # Преобразуем строку во время
+    new_time_obj = time_obj + timedelta(hours=hours)  # Добавляем часы
+    return new_time_obj.strftime("%H:%M")
 
 
 def instructor_booking_confirmed_text(lang):
@@ -852,13 +873,13 @@ def massage_service_info_text(lang):
         text = """**💆 Massage**
 
 🕒 9:00 AM - 9:00 PM 🕒  
-**1.** Relaxing  ⏰ 1h — 99₾ / 1.5h — 138₾  
-**2.** Classic    ⏰ 1h — 110₾ / 1.5h — 150₾  
-**3.** Sports    ⏰ 1h — 120₾ / 1.5h — 169₾  
-**4.** Therapeutic Session ⏰ 1.5h — 195₾ / 2h — 249₾  
-**5.** Balinese  ⏰ 1h — 120₾ / 1.5h —  169₾  
-**6.** Anti-cellulite ⏰ 1h — 110₾ / 1.5h — 150₾
-**7.** Back + legs ⏰ 1h — 110₾ / 1.5h — 150₾
+Relaxing                     ⏰ 1h — 99₾ / 1.5h — 138₾  
+Classic                        ⏰ 1h — 110₾ / 1.5h — 150₾  
+Sports                         ⏰ 1h — 120₾ / 1.5h — 169₾  
+Therapeutic Session ⏰ 1.5h — 195₾ / 2h — 249₾  
+Balinese                      ⏰ 1h — 120₾ / 1.5h —  169₾  
+Anti-cellulite               ⏰ 1h — 110₾ / 1.5h — 150₾
+Back + legs                  ⏰ 1h — 110₾ / 1.5h — 150₾
 
 1. What type of massage will it be?
 2. Duration?
@@ -871,14 +892,14 @@ __To return to the menu, type 'menu' / 'cancel' / 'no'__"""
     else:
         text = """**💆Массаж**
 
-🕒 9.00 - 20.00 🕒
-1. Расслабляющий    1 час ⏰ 99₾ / 1.5⏰  138₾
-2. Классический         1 час ⏰ 110₾ / 1.5⏰  150₾
-3. Спортивный            1 час ⏰ 120₾ / 1.5⏰  169₾
-4. Лечебный сеанс     1.5     ⏰ 195₾ / 2 ⏰  249₾
-5. Балийский                1 час ⏰ 120₾ / 1.5⏰  169₾
-6. Антицеллюлитный 1 час ⏰ 110₾ / 1.5⏰  150₾
-7. Спина + ноги            1 час ⏰ 110₾ / 1.5⏰  150₾
+🕒 9.00 - 21.00 🕒
+Расслабляющий    1 час ⏰ 99₾ / 1.5⏰  138₾
+Классический         1 час ⏰ 110₾ / 1.5⏰  150₾
+Спортивный            1 час ⏰ 120₾ / 1.5⏰  169₾
+Лечебный сеанс     1.5     ⏰ 195₾ / 2 ⏰  249₾
+Балийский                1 час ⏰ 120₾ / 1.5⏰  169₾
+Антицеллюлитный 1 час ⏰ 110₾ / 1.5⏰  150₾
+Спина + ноги            1 час ⏰ 110₾ / 1.5⏰  150₾
 
 1. Какой будет вид массажа?
 2. Длительность?
@@ -1175,7 +1196,7 @@ January 4
 Yaroslav
 +9955513437122
 
-"__To return to the menu, type 'menu' / 'cancel' / 'no'__"""
+__To return to the menu, type 'menu' / 'cancel' / 'no'__"""
     else:
         text = f"""**🗻 Мы находимся в Нью-Гудаури**
 💱 Обмен только от 100$ на лари ₾
@@ -1235,7 +1256,7 @@ def exchange_booking_error(lang, state_data):
         if key not in texts[lang]:
             continue
 
-        key_text = value + ' ✅' if value != 'None' else texts[lang][key]
+        key_text = str(value) + ' ✅' if value != 'None' else texts[lang][key]
         text += f'{n}. {key_text}\n'
         n += 1
 
@@ -1271,7 +1292,7 @@ We are located at:
 📍 New Gudauri, 42.469758, 44.491701  
 Underground parking, beneath the open pool ([Link](https://yandex.com/maps/-/CHEKYI5W))
 
-"__To return to the menu, type 'menu' / 'cancel' / 'no'__"""
+__To return to the menu, type 'menu' / 'cancel' / 'no'__"""
     else:
         return """**🛠Ремонт снаряжения**
 🕒 9.00 - 18.30 🕒
@@ -1348,7 +1369,7 @@ Choose a service:
 5. Apartment over 60m² - 200₾  
 6. Apartment over 60m² (Deep Cleaning) - 300₾  
 
-"__To return to the menu, type 'menu' / 'cancel' / 'no'__"""
+__To return to the menu, type 'menu' / 'cancel' / 'no'__"""
     else:
         return """
 **🧹 Уборка по Нью-Гудаури**
@@ -1430,7 +1451,7 @@ def cleaning_details_collecting_error(lang, state_data):
         if key == 'date' and value != 'None':
             value = utils.convert_date_to_str(value, lang)
 
-        key_text = value + ' ✅' if value != 'None' else texts[lang][key]
+        key_text = str(value) + ' ✅' if value != 'None' else texts[lang][key]
         text += f"{n}. {key_text}\n"
         n += 1
 
@@ -1507,6 +1528,119 @@ def rent_flat_booking_confirmed_text(lang):
 # ======== Rent Flat =======
 
 
+# ======== Transfer =======
+def transfer_service_info_text(lang):
+    if lang == "english":
+        return """
+1. Select the route number
+   1. Gudauri - Tbilisi Airport 🚕 250₾
+   2. Gudauri - Tbilisi               🚕 200₾
+   3. Gudauri - Vladikavkaz    🚕 10,000 RUB
+   4. Tbilisi Airport - Gudauri 🚕 250₾
+   5. Tbilisi - Gudauri               🚕 200₾
+   6. Vladikavkaz - Gudauri     🚕 10,000 RUB
+   7. Any other route
+
+2. Number of passengers?
+3. How many equipment bags do you have?
+4. How many luggage bags?
+5. What time should the car arrive?
+6. Your phone number?
+
+__To return to the menu, type 'menu' / 'cancel' / 'no'__"""
+    else:
+        return """
+1. Выберите цифру маршрута
+   1. Гудаури - Тбилиси аэропорт 🚕 250₾
+   2. Гудаури - Тбилиси                     🚕 200₾
+   3. Гудаури - Владикавказ             🚕 10.000 руб
+   4. Тбилиси аэропорт - Гудаури 🚕 250₾
+   5. Тбилиси - Гудаури                     🚕 200₾
+   6. Владикавказ - Гудаури             🚕 10.000 руб
+   7. Любой другой
+
+2. Количество человек?
+3. Сколько у вас сумок экипировки?
+4. Сколько сумок багажа?
+5. Время подачи машины?
+6. Ваш номер телефона?
+
+__Для возврата в меню напишите 'меню' / 'отмена' / 'нет'__"""
+
+
+def transfer_details_collecting_error(lang, state_data):
+    texts = {
+        'english': {
+            'route_number': 'Route number?',
+            'people_count': 'Number of passengers?',
+            'equipment_bags': 'How many equipment bags do you have?',
+            'luggage_bags': 'How many luggage bags?',
+            'car_ready_time': 'What time should the car arrive?',
+            'phone_number': 'Your phone number?',
+            'error_text': 'Oops! Something was filled in incorrectly, please try again:'
+        },
+        'russian': {
+            'route_number': 'Цифра маршрута?',
+            'people_count': 'Количество человек?',
+            'equipment_bags': 'Сколько у вас сумок экипировки?',
+            'luggage_bags': 'Сколько сумок багажа?',
+            'car_ready_time': 'Время подачи машины?',
+            'phone_number': 'Ваш номер телефона?',
+            'error_text': 'Ой! Похоже, что-то заполнено неверно. Пожалуйста, попробуйте снова:'
+        }
+    }
+
+    title = texts[lang]['error_text']
+    text = f"{title}\n\n"
+    n = 1
+    for key, value in state_data.items():
+        if key not in texts[lang]:
+            continue
+
+        if key == 'date' and value != 'None':
+            value = utils.convert_date_to_str(value, lang)
+
+        key_text = str(value) + ' ✅' if value != 'None' else texts[lang][key]
+        text += f"{n}. {key_text}\n"
+        n += 1
+
+    return text
+
+
+def transfer_booking_text(user, route_number, people_count, equipment_bags, luggage_bags, car_ready_time, phone_number):
+    user_mention = utils.get_user_mention(user.user_id, user.full_name)
+    username = f' | @{user.username}' if user.username else ''
+    route_name = transfer_price_dict['russian'].get(route_number, {}).get('name', 'Неизвестный маршрут')
+    route_price = transfer_price_dict['russian'].get(route_number, {}).get('price', 0)
+    currency = transfer_price_dict['russian'].get(route_number, {}).get('currency', '')
+    if not route_price:
+        route_price = 'Неизвестно'
+
+    return (f"🆕 Заявка: Трансфер\n\n"
+            f"👤 {user_mention}{username}\n"
+            f"📍 {route_name}\n"
+            f"💵 {route_price} {currency}\n\n"
+            f"🧍 Кол-во человек: {people_count}\n"
+            f"🎿 Экипировка: {equipment_bags}\n"
+            f"🎒 Багаж: {luggage_bags}\n"
+            f"🕒 Время подачи: {car_ready_time}\n"
+            f"📞 {phone_number}")
+
+
+def transfer_booking_confirmed_text(lang):
+    if lang == "english":
+        return (
+            f"🎉Contacts have been sent. Please wait, we will contact you to find suitable transfer.\n"
+            f"**Please pay in cash (₾/$)**")
+    else:
+        return (f"🎉Контакты отправлены, ожидайте, мы свяжемся с вами и подберем вам трансфер.\n"
+                f"**Пожалуйста, оплатите наличными (₾/$)**")
+
+# ======== Utils =======
+
+# ======== Transfer =======
+
+
 # ======== Utils =======
 def has_invalid_items(selected_items, items_dict):
     selected_item_ids = [item['number'] for item in selected_items]
@@ -1523,25 +1657,9 @@ def service_unavailable_error(lang):
 
 
 service_types = [
-    "rent_equipment", "instructor", "food_coffee", "massage", "transfer_taxi", "paragliding",
+    "rent_equipment", "instructor", "food_coffee", "massage", "transfer", "paragliding",
     "snowbike_tour", "exchange", "ski_service", "photo_video", "cleaning", "rent_flat", "undefined"
 ]
-
-
-SERVICES = {
-    "1": ["rent_equipment", "Rent Ski/Board", "Прокат"],
-    "2": ["instructor", "Instructor", "Инструктор"],
-    "3": ["food_coffee", "Food/Coffee", "Еда/Кофе"],
-    "4": ["massage", "Massage", "Массаж"],
-    "5": ["transfer_taxi", "Transfer/Taxi", "Трансфер/Такси"],
-    "6": ["paragliding", "Paragliding", "Полет на параплане"],
-    "7": ["snowbike_tour", "Snowbike tour", "Снегоход"],
-    "8": ["exchange", "Exchange", "Обмен валют"],
-    "9": ["ski_service", "Ski-service", "Ремонт снаряжения"],
-    "10": ["photo_video", "Photo/Video", "Фото/Видео"],
-    "11": ["cleaning", "Cleaning", "Уборка"],
-    "12": ["rent_flat", "RentFlat", "Аренда Квартир"]
-}
 
 
 massage_dict = {
@@ -1640,4 +1758,27 @@ equipment_dict = {
         10: {"name": "Штаны", "price": 10},
     }
 }
+
+
+transfer_price_dict = {
+    "english": {
+        1: {"name": "Gudauri - Tbilisi Airport", "price": 250, 'currency': 'GEL'},
+        2: {"name": "Gudauri - Tbilisi", "price": 200, 'currency': 'GEL'},
+        3: {"name": "Gudauri - Vladikavkaz", "price": 10000, 'currency': 'RUB'},
+        4: {"name": "Tbilisi Airport - Gudauri", "price": 250, 'currency': 'GEL'},
+        5: {"name": "Tbilisi - Gudauri", "price": 200, 'currency': 'GEL'},
+        6: {"name": "Vladikavkaz - Gudauri", "price": 10000, 'currency': 'RUB'},
+        7: {"name": "Any other route", "price": None, 'currency': ''},
+    },
+    "russian": {
+        1: {"name": "Гудаури - Тбилиси аэропорт", "price": 250, 'currency': 'GEL'},
+        2: {"name": "Гудаури - Тбилиси", "price": 200, 'currency': 'GEL'},
+        3: {"name": "Гудаури - Владикавказ", "price": 10000, 'currency': 'RUB'},
+        4: {"name": "Тбилиси аэропорт - Гудаури", "price": 250, 'currency': 'GEL'},
+        5: {"name": "Тбилиси - Гудаури", "price": 200, 'currency': 'GEL'},
+        6: {"name": "Владикавказ - Гудаури", "price": 10000, 'currency': 'RUB'},
+        7: {"name": "Любой другой", "price": None, 'currency': ''},
+    }
+}
+
 # ======== Templates ========

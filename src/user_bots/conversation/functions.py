@@ -15,8 +15,13 @@ class ConversationService(TGObject):
         user = self.repo.find_user(self.user_id)
         if user.root:
             return
-        elif not user.lead:
+        if not user.lead:
             self.repo.add_lead(self.user_id)
+            self.repo.update_user(self.user_id, state='new_user')
+        elif not user.state and user.lead.lang:
+            self.repo.update_user(self.user_id, state='service_request')
+            return await self.all_services_menu()
+        elif not user.state and not user.lead.lang:
             self.repo.update_user(self.user_id, state='new_user')
 
         state_functions = {
@@ -29,7 +34,6 @@ class ConversationService(TGObject):
             # Hire instructor
             'hire_instructor_info_request': self.handle_hire_instructor_info_request,
             'hire_instructor_personal_info_request': self.hire_instructor_personal_info_request,
-            'hire_instructor_confirmation_request': self.hire_instructor_confirmation_request,
             # Food & Coffee
             'food_order_info_request': self.handle_food_order_info_request,
             'food_order_delivery_details_request': self.handle_food_order_delivery_details_request,
@@ -37,7 +41,6 @@ class ConversationService(TGObject):
             # Massage
             'massage_date_info_request': self.handle_massage_date_info_request,
             'massage_type_info_request': self.handle_massage_type_info_request,
-            'massage_booking_confirmation_request': self.handle_massage_booking_confirmation_request,
             # Paragliding
             'paragliding_plan_info_request': self.handle_paragliding_plan_info_request,
             'paragliding_booking_info_request': self.handle_paragliding_booking_info_request,
@@ -60,6 +63,8 @@ class ConversationService(TGObject):
             # Rent Flat
             'rent_flat_info_request': self.handle_rent_flat_info_request,
             'rent_flat_booking_confirmation_request': self.handle_rent_flat_booking_confirmation_request,
+            # Transfer
+            'transfer_info_request': self.handle_transfer_info_request,
         }
 
         if user.state in state_functions:
@@ -96,6 +101,24 @@ class ConversationService(TGObject):
 
     async def handle_service_request(self):
         user = self.repo.find_user(self.user_id)
+
+        service_shortcuts = {
+            '1': self.handle_rent_equipment_service,
+            '2': self.handle_instructor_service,
+            '3': self.handle_food_coffee_service,
+            '4': self.handle_massage_service,
+            '5': self.handle_transfer_service,
+            '6': self.handle_paragliding_service,
+            '7': self.handle_snowbike_service,
+            '8': self.handle_exchange_service,
+            '9': self.handle_ski_service,
+            '11': self.handle_cleaning_service,
+            '12': self.handle_rent_flat_service,
+        }
+
+        if self.text in service_shortcuts:
+            return await service_shortcuts[self.text]()
+
         response = api.determine_service(self.text)
         service = response["service"]
 
@@ -104,6 +127,7 @@ class ConversationService(TGObject):
             'instructor': self.handle_instructor_service,
             'food_coffee': self.handle_food_coffee_service,
             'massage': self.handle_massage_service,
+            'transfer': self.handle_transfer_service,
             'paragliding': self.handle_paragliding_service,
             'snowbike_tour': self.handle_snowbike_service,
             'exchange': self.handle_exchange_service,
@@ -198,7 +222,7 @@ class ConversationService(TGObject):
         self.repo.update_user(
             self.user_id,
             state='hire_instructor_info_request',
-            state_data={'dates': 'None', 'time': 'None', 'equipment': 'None', 'participants': 'None', 'age': 'None'}
+            state_data={'dates': 'None', 'time': 'None', 'equipment': 'None', 'participants_count': 'None', 'participants_type': 'None', 'age': 'None'}
         )
 
         user = self.repo.find_user(self.user_id)
@@ -263,7 +287,8 @@ class ConversationService(TGObject):
         dates = user.state_data.get('dates')
         time = user.state_data.get('time')
         equipment = user.state_data.get('equipment')
-        participants = user.state_data.get('participants')
+        participants_count = user.state_data.get('participants_count')
+        participants_type = user.state_data.get('participants_type')
         age = user.state_data.get('age')
         name = user.state_data.get('name')
         phone_number = user.state_data.get('phone_number')
@@ -273,39 +298,13 @@ class ConversationService(TGObject):
             text = tmp.instructor_booking_user_data_request_error(user.lead.lang, user.state_data)
             return await self.respond(text)
 
-        self.repo.update_user(self.user_id, state='hire_instructor_confirmation_request')
+        first_text = tmp.new_instructor_booking_text(user, dates, time, equipment, participants_count, participants_type, age, name, phone_number, place)
+        await stg.bot.send_message(stg.notification_box_chat_id, first_text)
 
-        text = tmp.instructor_booking_confirmation_text(user.lead.lang, dates, time, equipment, participants, age, name, phone_number, place)
-        return await self.respond(text)
+        second_text = tmp.instructor_booking_confirmed_text(user.lead.lang)
+        await self.respond(second_text)
 
-    async def hire_instructor_confirmation_request(self):
-        user = self.repo.find_user(self.user_id)
-        response = api.analyze_answer_yes_no(self.text)
-        answer = response['answer']
-
-        if response.get('is_request_canceled'):
-            return await self.handle_instructor_service()
-
-        if answer:
-            dates = user.state_data.get('dates')
-            time = user.state_data.get('time')
-            equipment = user.state_data.get('equipment')
-            participants = user.state_data.get('participants')
-            age = user.state_data.get('age')
-            name = user.state_data.get('name')
-            phone_number = user.state_data.get('phone_number')
-            place = user.state_data.get('place')
-            first_text = tmp.new_instructor_booking_text(user, dates, time, equipment, participants, age, name, phone_number, place)
-            await stg.bot.send_message(stg.notification_box_chat_id, first_text)
-
-            second_text = tmp.instructor_booking_confirmed_text(user.lead.lang)
-            await self.respond(second_text)
-
-            return await self.all_services_menu()
-        elif answer is None:
-            pass
-        else:
-            return await self.handle_hire_instructor_info_request()
+        return await self.all_services_menu()
 
     async def handle_food_coffee_service(self):
         self.repo.update_user(
@@ -500,46 +499,17 @@ class ConversationService(TGObject):
         if not self.repo.is_massage_booking_time_available(utc_dt, duration):
             return await self.respond(tmp.unavailable_time_error(lang))
 
-        user.state_data.update(response)
-        self.repo.update_user(
-            self.user_id,
-            state='massage_booking_confirmation_request',
-            state_data=user.state_data
-        )
+        due_date = utils.combine_and_localize_datetime(date, time, utc=True)
+        self.repo.add_massage_booking(self.user_id, due_date, massage_type, duration)
 
-        text = tmp.massage_booking_confirmation_request_text(lang, date, time, massage_type, duration)
-        return await self.respond(text)
+        first_text = tmp.massage_booking_text(user, date, time, massage_type, duration)
+        await stg.bot.send_message(stg.massage_chat_id, first_text)
 
-    async def handle_massage_booking_confirmation_request(self):
-        user = self.repo.find_user(self.user_id)
-        lang = user.lead.lang
-        response = api.analyze_answer_yes_no(self.text)
-        answer = response['answer']
+        file_path = utils.get_path_to_asset('new_gudauri_map.png')
+        second_text = tmp.massage_booking_confirmed_text(lang)
+        await self.respond(second_text, file=file_path)
 
-        if response.get('is_request_canceled'):
-            return await self.handle_massage_service()
-
-        if answer:
-            date = user.state_data.get('date')
-            time = user.state_data.get('time')
-            massage_type = user.state_data.get('massage_type')
-            duration = user.state_data.get('duration')
-
-            due_date = utils.combine_and_localize_datetime(date, time, utc=True)
-            self.repo.add_massage_booking(self.user_id, due_date, massage_type, duration)
-
-            first_text = tmp.massage_booking_text(user, date, time, massage_type, duration)
-            await stg.bot.send_message(stg.massage_chat_id, first_text)
-
-            file_path = utils.get_path_to_asset('new_gudauri_map.png')
-            second_text = tmp.massage_booking_confirmed_text(lang)
-            await self.respond(second_text, file=file_path)
-
-            return await self.all_services_menu()
-        elif answer is None:
-            pass
-        else:
-            return await self.handle_massage_service()
+        return await self.all_services_menu()
 
     async def handle_paragliding_service(self):
         self.repo.update_user(
@@ -1084,3 +1054,58 @@ class ConversationService(TGObject):
         else:
             return await self.handle_rent_flat_service()
 
+    async def handle_transfer_service(self):
+        self.repo.update_user(
+            self.user_id,
+            state='transfer_info_request',
+            state_data={
+                'route_number': 'None',
+                'people_count': 'None',
+                'equipment_bags': 'None',
+                'luggage_bags': 'None',
+                'car_ready_time': 'None',
+                'phone_number': 'None'
+            }
+        )
+
+        user = self.repo.find_user(self.user_id)
+        lang = user.lead.lang
+        text = tmp.transfer_service_info_text(lang)
+        await self.respond(text)
+
+    async def handle_transfer_info_request(self):
+        user = self.repo.find_user(self.user_id)
+        lang = user.lead.lang
+        response = api.extract_transportation_booking_details(self.text)
+
+        if response.get('is_request_canceled'):
+            return await self.all_services_menu()
+
+        response.pop("is_request_canceled", None)
+
+        for key, value in response.items():
+            if value != 'None' and value:
+                user.state_data[key] = response[key]
+
+        self.repo.update_user(
+            self.user_id,
+            state_data=user.state_data
+        )
+
+        if 'None' in user.state_data.values():
+            return await self.respond(tmp.transfer_details_collecting_error(lang, user.state_data))
+
+        route_number = user.state_data.get('route_number')
+        people_count = user.state_data.get('people_count')
+        equipment_bags = user.state_data.get('equipment_bags')
+        luggage_bags = user.state_data.get('luggage_bags')
+        car_ready_time = user.state_data.get('car_ready_time')
+        phone_number = user.state_data.get('phone_number')
+
+        first_text = tmp.transfer_booking_text(user, route_number, people_count, equipment_bags, luggage_bags, car_ready_time, phone_number)
+        await stg.bot.send_message(stg.rent_flat_chat_id, first_text)
+
+        second_text = tmp.transfer_booking_confirmed_text(lang)
+        await self.respond(second_text)
+
+        return await self.all_services_menu()
