@@ -2,6 +2,7 @@ from src.bot.bot_auth.functions import BotAuthFunctions
 from src.bot.main_menu.functions import MainMenuFunctions
 from src.bot.massage_service.functions import MassageServiceFunctions
 from src.bot.objects import TGObject
+import src.settings as stg
 
 
 class TextRouter(TGObject):
@@ -54,6 +55,7 @@ class TextRouter(TGObject):
 
     async def massage_calendar_command(self):
         await self.delete()
+        stg.logger.info(f'=========== {self.chat_id} ========')
         return await MassageServiceFunctions(self.event, self.session).send_calendar_menu()
 
     def _message_logger(self):
