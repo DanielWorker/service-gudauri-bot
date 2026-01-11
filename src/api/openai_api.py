@@ -97,7 +97,7 @@ def get_selected_language(text):
     return json.loads(result)
 
 
-def determine_service(text):
+def determine_service(text):  # todo
     response = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
@@ -105,23 +105,18 @@ def determine_service(text):
                 "role": "system",
                 "content": (
                     "You are an assistant that analyzes the user's request for services. "
-                    "The user can provide a response in Russian or English, either by service name or by the service number from the following list:""1. Rent Ski/Board Прокат"
-                    "1. Rent Equipment Ski/Board Прокат снаряжения"
-                    "2. Instructor Инструктор"
-                    "3. Food Еда"
-                    "4. Massage Массаж"
-                    "5. Transfer Трансфер"
-                    "6. Paragliding Полет на параплане"
-                    "7. Snowbike tour Снегоход"
-                    "8. Exchange Обмен валют"
-                    "9. Ski-service Ремонт снаряжения"
-                    "10. Photo/Video Фото/Видео"
-                    "11. Cleaning Уборка"
-                    "12. RentFlat Аренда Квартир"
+                    "The user can provide a response in Russian or English, either by service name or by the service number from the following list: "
+                    "1. Equipment sale/Распродажа снаряжения "
+                    "2. Instructor Инструктор "
+                    "3. Massage Массаж "
+                    "4. Exchange Обмен валют "
+                    "5. Paragliding Полет на параплане "
+                    # "6. Transfer Трансфер"
+                    
                     "If the user mentions more than one service, select the most appropriate service or use 'undefined' if no valid service is selected. "
                     "Return a JSON object containing a single key 'service' with one of the following enum values: "
-                    "'rent_equipment', 'instructor', 'food_coffee', 'massage', 'transfer', 'paragliding', 'snowbike_tour', "
-                    "'exchange', 'ski_service', 'photo_video', 'cleaning', 'rent_flat', or 'undefined'. "
+                    "'sale_equipment', 'instructor' 'massage', 'transfer', 'paragliding', "
+                    "'exchange', or 'undefined'. "
                     "If no valid service is detected, return 'undefined'."
                 )
             },
@@ -138,14 +133,16 @@ def determine_service(text):
                     "type": "object",
                     "properties": {
                         "service": {
-                            "description": "The selected service. Possible values are "
-                                           "'rent_equipment', 'instructor', 'food_coffee', 'massage', 'transfer', "
-                                           "'paragliding', 'snowbike_tour', 'exchange', 'ski_service', 'photo_video', "
-                                           "'cleaning', 'rent_flat', or 'undefined'.",
+                            "description": "The selected service by user, or 'undefined' if no valid service is selected.",
                             "type": "string",
                             "enum": [
-                                "rent_equipment", "instructor", "food_coffee", "massage", "transfer", "paragliding",
-                                "snowbike_tour", "exchange", "ski_service", "photo_video", "cleaning", "rent_flat", "undefined"
+                                "sale_equipment",
+                                "instructor",
+                                "massage",
+                                "transfer",
+                                "paragliding",
+                                "exchange",
+                                "undefined",
                             ]
                         },
                         # "multiple_services": {

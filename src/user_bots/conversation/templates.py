@@ -14,43 +14,27 @@ def select_language_error():
     return ("Пожалуйста попробуйте еще раз\n"
             "Please try again")
 
-
-def all_services_text(lang):
+def all_services_text(lang):  # removed 6. 🚕Transfer
     if lang == "english":
         text = """Write number/word, what do you want?
 
-1. 🎿Rent Ski & Board 
+1. 🎿Equipment sale 
 2. ⛷Instructor    
-3. 🍔Food
-4. 💆Massage                
-5. 🚕Transfer
-6. 🪂Paragliding
-7. 🏍Snowbike tour     
-8. 💵Exchange       
-9. 🛠Ski-service
-10. 📹 Photo/Video  
-11. 🧹Cleaning           
-12. 🏠RentFlat
+3. 💆Massage                
+4. 💵Exchange
+5. 🪂Paragliding      
 
 Ski-lift Open/Closed 🟢🔴 
 Road status 🟢🔴
 [Check](https://t.me/ASG_Status)
 """
-    else:
+    else:  # removed 4. 🚕Трансфер
         text = """Здравствуйте, напишите цифру/слово
-
-1. 🎿Прокат лыж & Сноубордов
+1. 🎿Распродажа снаряжения
 2. ⛷Инструктор    
-3. 🍔Еда
-4. 💆Массаж
-5. 🚕Трансфер
-6. 🪂Полет на параплане
-7. 🏍Тур на снегоходе
-8. 💵Обмен валют       
-9. 🛠Ремонт снаряжения
-10. 📹Фото & Видео  
-11. 🧹Уборка           
-12. 🏠Аренда Квартир
+3. 💆Массаж
+4. 💵Обмен валют      
+5. 🪂Полет на параплане
 
 Статус подъемников 🟢🔴
 Статус авто дорог из-за снега 🟢🔴
@@ -58,6 +42,29 @@ Road status 🟢🔴
 """
 
     return text
+
+
+# ======== Sale Equipment ========
+def sale_equipment_info_text(lang):
+    texts = {
+        'english': """Gudauri Sale
+Follow the link and select your equipment:
+https://t.me/Ski_equipment_sale_used
+
+To purchase, write to:
+https://t.me/kolsonov
+
+__To return to the menu, type 'menu' / 'cancel' / 'no'__""",
+        "russian": """Распродажа Гудаури
+Перейдите по ссылке и выберите снаряжение:
+https://t.me/Ski_equipment_sale_used
+
+Для покупки, напишите:
+https://t.me/kolsonov
+
+__Для возврата в меню напишите 'меню' / 'отмена' / 'нет'__""",
+    }
+    return texts.get(lang)
 
 
 # ======== Rent Equipment ========
@@ -219,81 +226,51 @@ def equipment_booking_confirmed_text(lang):
 def hire_instructor_info_text(lang):
     if lang == "english":
         return """
+**🗻 Ski and snowboard lessons in Gudauri with a certified instructor**
+For beginners and those who want to improve their skills.
+
+**Cost of lessons:**
+• From **115₾ (42$)** per hour, minimum 2 hours per lesson.
 ┌───────┐
     **👥 For Adults**
 └───────┘
-🕘 9:10 – 11:10 🕒
-- **250₾ (90$)** 2h for 1 person
-- **380₾ (136$)** 2h for a group of 2 people
-- **460₾ (165$)** 2h for a group of 3 people
-
-🕘 11:30 – 13:30 🕒
-- **240₾ (86$)** 2h for 1 person
-- **360₾ (129$)** 2h for a group of 2 people
-- **440₾ (149$)** 2h for a group of 3 people
-
-🕘 14:00 – 16:00 🕒
-- **220₾ (79$)** 2h for 1 person
-- **330₾ (118$)** 2h for a group of 2 people
-- **400₾ (144$)** 2h for a group of 3 people
-
-┌────────┐
-    **👨‍👩‍👦 For Children**
-└────────┘
-**Under 6 years old** individual lessons only
-**Children 7+** 2h lessons
-
-🕘 10:10 – 12:10 🕒
-- **250₾ (90$)** 2h for 1 child
-- **380₾ (136$)** 2h for a group of 2 children
+🕘 10:00 – 12:00 🕒
+- **250₾ (89$)** 2h for 1 person
+- **400₾ (149$)** 2h for a group of 2 people
+- **500₾ (186$)** 2h for a group of 3 people
 
 🕘 12:30 – 14:30 🕒
-- **250₾ (90$)** 2h for 1 child
-- **380₾ (136$)** 2h for a group of 2 children
+- **240₾ (85$)** 2h for 1 person
+- **390₾ (146$)** 2h for a group of 2 people
+- **490₾ (183$)** 2h for a group of 3 people
 
-🕘 15:00 – 17:00 🕒
-- **240₾ (86$)** 2h for 1 child
-- **360₾ (129$)** 2h for a group of 2 children
-
-**🗻 Ski and Snowboard Lessons in Gudauri with a Certified Instructor**"""
+🕘 14:00 – 16:00 🕒
+- **230₾ (83$)** 2h for 1 person
+- **370₾ (138$)** 2h for a group of 2 people
+- **470₾ (175$)** 2h for a group of 3 people
+"""
     else:
         return """
-┌─────────┐
-    **👥 Для взрослых**
-└─────────┘
+**🗻 Обучение катанию в Гудаури на лыжах и сноуборде с сертифицированным инструктором**
+Для новичков и тех, кто хочет повысить свой уровень.
+
+**Стоимость занятий:**
+• От **115₾ (42$)** за час, занятие от 2х часов.
+
 🕘 9:10 – 11:10 🕒
-- **250₾ (90$)** 2 часа 1 человек
-- **380₾ (136$)** 2ч группа 2 человека
-- **460₾ (165$)** 2ч группа 3 человека
+- **250₾ (89$)** 2 часа 1 человек
+- **400₾ (149$)** 2ч группа 2 человека
+- **500₾ (186$)** 2ч группа 3 человека
 
 🕘 11:30 – 13:30 🕒
-- **240₾ (86$)** 2 часа 1 человек
-- **360₾ (129$)** 2ч группа 2 человека
-- **440₾ (149$)** 2ч группа 3 человека
+- **240₾ (85$)** 2 часа 1 человек
+- **390₾ (146$)** 2ч группа 2 человека
+- **490₾ (183$)** 2ч группа 3 человека
 
 🕘 14:00 – 16:00 🕒
-- **220₾ (79$)** 2 часа 1 человек
-- **330₾ (118$)** 2ч группа 2 человека
-- **400₾ (144$)** 2ч группа 3 человека
-
-┌───────┐
-    **👨‍👩‍👦 Для детей**
-└───────┘ 
-**До 6 лет** занимаются только индивидуально
-**Дети 7+** занимаются 2ч
-🕘 10:10 – 12:10 🕒
-- **250₾ (90$)** 2ч за 1 ребенка
-- **380₾ (136$)** 2ч за группу из 2 детей
-
-🕘 12:30 – 14:30 🕒
-- **250₾ (90$)** 2ч за 1 ребенка
-- **380₾ (136$)** 2ч за группу из 2 детей
-
-🕘 15:00 – 17:00 🕒
-- **240₾ (86$)** 2ч за 1 ребенка
-- **360₾ (129$)** 2ч за группу из 2 детей
-
-**🗻 Обучение катанию в Гудаури на лыжах и сноуборде с сертифицированным инструктором**
+- **230₾ (83$)** 2 часа 1 человек
+- **370₾ (138$)** 2ч группа 2 человека
+- **470₾ (175$)** 2ч группа 3 человека
 """
 
 
@@ -878,7 +855,7 @@ Classic                        ⏰ 1h — 110₾ / 1.5h — 150₾
 Sports                         ⏰ 1h — 120₾ / 1.5h — 169₾  
 Therapeutic Session ⏰ 1.5h — 195₾ / 2h — 249₾  
 Balinese                      ⏰ 1h — 120₾ / 1.5h —  169₾  
-Anti-cellulite               ⏰ 1h — 110₾ / 1.5h — 150₾
+Cupping Therapy   ⏰ 1h — 110₾ / 1.5h — 150₾
 Back + legs                  ⏰ 1h — 110₾ / 1.5h — 150₾
 
 1. What type of massage will it be?
@@ -893,12 +870,11 @@ __To return to the menu, type 'menu' / 'cancel' / 'no'__"""
         text = """**💆Массаж**
 
 🕒 9.00 - 21.00 🕒
-Расслабляющий    1 час ⏰ 99₾ / 1.5⏰  138₾
-Классический         1 час ⏰ 110₾ / 1.5⏰  150₾
-Спортивный            1 час ⏰ 120₾ / 1.5⏰  169₾
-Лечебный сеанс     1.5     ⏰ 195₾ / 2 ⏰  249₾
+Расслабляющий    1 час ⏰ 110₾ / 1.5⏰  160₾
+Классический         1 час ⏰ 130₾ / 1.5⏰  180₾
+Спортивный            1 час ⏰ 150₾ / 1.5⏰  220₾
 Балийский                1 час ⏰ 120₾ / 1.5⏰  169₾
-Антицеллюлитный 1 час ⏰ 110₾ / 1.5⏰  150₾
+Банки (лечебный) 1 час ⏰ 110₾ / 1.5⏰  150₾
 Спина + ноги            1 час ⏰ 110₾ / 1.5⏰  150₾
 
 1. Какой будет вид массажа?
@@ -957,12 +933,13 @@ def massage_booking_confirmation_request_text(lang, date, time, massage_type, du
 def massage_booking_confirmed_text(lang):
     if lang == "english":
         return (f"**🎉 Your booking is confirmed!**\n"
-                f"📍 Come to Loft 2, any entrance to the elevator, 2nd floor, №239\n"
-                f"Please pay in cash (₾/$)")
+                "**Please pay in cash (₾/$)**"
+                f"Your contact details have been forwarded to the instructor,"
+                f"who will contact you as soon as they are available.\n")
     else:
         return (f"**🎉 Ваша запись подтверждена!**\n"
-                f"📍 Приходите Loft 2, любой вход к лифту, 2 этаж, №239\n"
-                f"Пожалуйста, оплатите наличными (₾/$)")
+                f"Ваш контакт передан инструктору,\n"
+                f"свяжется с вами, как освободится")
 
 
 def massage_booking_text(user, date, time, massage_type, duration):
@@ -1182,6 +1159,7 @@ def currency_exchange_info_text(lang):
         text = f"""**🗻 We are located in New Gudauri**
 💱 Exchange only from $100 to GEL ₾
 💵 Today's rate: $1 = ₾{current_rate}
+💶 Today's rate: €1 = ₾3
 
 1. Specify the amount in $ for exchange
 2. Date
@@ -1201,6 +1179,7 @@ __To return to the menu, type 'menu' / 'cancel' / 'no'__"""
         text = f"""**🗻 Мы находимся в Нью-Гудаури**
 💱 Обмен только от 100$ на лари ₾
 💵 Курс сегодня $1 = ₾{current_rate}
+💶 Курс сегодня €1 = ₾3
 
 1. Укажите сумму $ для обмена
 2. Дата

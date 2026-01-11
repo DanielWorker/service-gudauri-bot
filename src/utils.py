@@ -71,7 +71,7 @@ def get_path_to_asset(image_name):
 
 
 def get_currency_rate():
-    return 2.7
+    return 2.6
     # client = ApifyClient(stg.APIFY_TOKEN)
     #
     # run_input = {

@@ -51,15 +51,28 @@ logger.setLevel(logging.INFO)
 
 log_file_path = os.path.join(log_dir, 'log.log')
 
-if not os.path.isfile(log_file_path):
-    with open(log_file_path, 'w'):
-        pass
+# Файловый handler
+file_handler = RotatingFileHandler(
+    log_file_path,
+    maxBytes=200_000,
+    backupCount=10,
+    encoding='utf-8'
+)
 
-handler = RotatingFileHandler(log_file_path, maxBytes=200000, backupCount=10, encoding='utf-8')
-formatter = logging.Formatter(fmt='%(asctime)s : %(levelname)s : %(message)s', datefmt='%d/%m/%Y %H:%M:%S')
+formatter = logging.Formatter(
+    fmt='%(asctime)s : %(levelname)s : %(message)s',
+    datefmt='%d/%m/%Y %H:%M:%S'
+)
 
-handler.setFormatter(formatter)
-logger.addHandler(handler)
+file_handler.setFormatter(formatter)
+
+# Консольный handler
+console_handler = logging.StreamHandler()
+console_handler.setFormatter(formatter)
+
+# Добавляем оба
+logger.addHandler(file_handler)
+logger.addHandler(console_handler)
 
 bot = None
 

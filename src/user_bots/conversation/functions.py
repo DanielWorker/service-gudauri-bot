@@ -29,15 +29,9 @@ class ConversationService(TGObject):
             'language_request': self.handle_language_request,
             'service_request': self.handle_service_request,
 
-            # Rent equipment
-            'rent_equipment_info_request': self.handle_rent_equipment_info_request,
             # Hire instructor
             'hire_instructor_info_request': self.handle_hire_instructor_info_request,
             'hire_instructor_personal_info_request': self.hire_instructor_personal_info_request,
-            # Food & Coffee
-            'food_order_info_request': self.handle_food_order_info_request,
-            'food_order_delivery_details_request': self.handle_food_order_delivery_details_request,
-            'food_order_confirmation_request': self.handle_food_order_confirmation_request,
             # Massage
             'massage_date_info_request': self.handle_massage_date_info_request,
             'massage_type_info_request': self.handle_massage_type_info_request,
@@ -45,26 +39,33 @@ class ConversationService(TGObject):
             'paragliding_plan_info_request': self.handle_paragliding_plan_info_request,
             'paragliding_booking_info_request': self.handle_paragliding_booking_info_request,
             'paragliding_booking_confirmation_request': self.handle_paragliding_booking_confirmation_request,
-            # Snowbike
-            'snowbike_tour_info_request': self.handle_snowbike_tour_info_request,
-            'snowbike_booking_info_request': self.handle_snowbike_booking_info_request,
-            'snowbike_booking_confirmation_request': self.handle_snowbike_booking_confirmation_request,
             # Exchange
             'exchange_info_request': self.handle_exchange_info_request,
             'exchange_booking_confirmation_request': self.handle_exchange_booking_confirmation_request,
-            # Ski Service
-            'ski_service_info_request': self.handle_ski_service_info_request,
-            'ski_booking_info_request': self.handle_ski_booking_info_request,
-            'ski_booking_confirmation_request': self.handle_ski_booking_confirmation_request,
-            # Cleaning
-            'cleaning_info_request': self.handle_cleaning_info_request,
-            'cleaning_booking_info_request': self.handle_cleaning_booking_info_request,
-            'cleaning_booking_confirmation_request': self.handle_cleaning_booking_confirmation_request,
-            # Rent Flat
-            'rent_flat_info_request': self.handle_rent_flat_info_request,
-            'rent_flat_booking_confirmation_request': self.handle_rent_flat_booking_confirmation_request,
             # Transfer
             'transfer_info_request': self.handle_transfer_info_request,
+
+            # Rent equipment
+            # 'rent_equipment_info_request': self.handle_rent_equipment_info_request,
+            # Food & Coffee
+            # 'food_order_info_request': self.handle_food_order_info_request,
+            # 'food_order_delivery_details_request': self.handle_food_order_delivery_details_request,
+            # 'food_order_confirmation_request': self.handle_food_order_confirmation_request,
+            # Snowbike
+            # 'snowbike_tour_info_request': self.handle_snowbike_tour_info_request,
+            # 'snowbike_booking_info_request': self.handle_snowbike_booking_info_request,
+            # 'snowbike_booking_confirmation_request': self.handle_snowbike_booking_confirmation_request,
+            # Ski Service
+            # 'ski_service_info_request': self.handle_ski_service_info_request,
+            # 'ski_booking_info_request': self.handle_ski_booking_info_request,
+            # 'ski_booking_confirmation_request': self.handle_ski_booking_confirmation_request,
+            # Cleaning
+            # 'cleaning_info_request': self.handle_cleaning_info_request,
+            # 'cleaning_booking_info_request': self.handle_cleaning_booking_info_request,
+            # 'cleaning_booking_confirmation_request': self.handle_cleaning_booking_confirmation_request,
+            # Rent Flat
+            # 'rent_flat_info_request': self.handle_rent_flat_info_request,
+            # 'rent_flat_booking_confirmation_request': self.handle_rent_flat_booking_confirmation_request,
         }
 
         if user.state in state_functions:
@@ -103,17 +104,14 @@ class ConversationService(TGObject):
         user = self.repo.find_user(self.user_id)
 
         service_shortcuts = {
-            '1': self.handle_rent_equipment_service,
+            '1': self.handle_buy_equipment_service,
             '2': self.handle_instructor_service,
-            '3': self.handle_food_coffee_service,
-            '4': self.handle_massage_service,
-            '5': self.handle_transfer_service,
-            '6': self.handle_paragliding_service,
-            '7': self.handle_snowbike_service,
-            '8': self.handle_exchange_service,
-            '9': self.handle_ski_service,
-            '11': self.handle_cleaning_service,
-            '12': self.handle_rent_flat_service,
+            '3': self.handle_massage_service,
+            '4': self.handle_exchange_service,
+            '5': self.handle_paragliding_service,
+            # '6': self.handle_transfer_service,
+
+
         }
 
         if self.text in service_shortcuts:
@@ -123,17 +121,12 @@ class ConversationService(TGObject):
         service = response["service"]
 
         service_handlers = {
-            'rent_equipment': self.handle_rent_equipment_service,
+            'sale_equipment': self.handle_buy_equipment_service,
             'instructor': self.handle_instructor_service,
-            'food_coffee': self.handle_food_coffee_service,
             'massage': self.handle_massage_service,
-            'transfer': self.handle_transfer_service,
-            'paragliding': self.handle_paragliding_service,
-            'snowbike_tour': self.handle_snowbike_service,
             'exchange': self.handle_exchange_service,
-            'ski_service': self.handle_ski_service,
-            'cleaning': self.handle_cleaning_service,
-            'rent_flat': self.handle_rent_flat_service,
+            'paragliding': self.handle_paragliding_service,
+            # 'transfer': self.handle_transfer_service,
         }
 
         if service not in service_handlers:
@@ -141,6 +134,17 @@ class ConversationService(TGObject):
             return await self.respond(text)
 
         return await service_handlers[service]()
+
+    async def handle_sale_equipment_service(self):
+        self.repo.update_user(
+            self.user_id,
+            state='rent_equipment_info_request',
+        )
+
+        user = self.repo.find_user(self.user_id)
+        lang = user.lead.lang
+        text = tmp.sale_equipment_info_text(lang)
+        await self.respond(text)
 
     async def handle_rent_equipment_service(self):
         self.repo.update_user(
@@ -252,16 +256,19 @@ class ConversationService(TGObject):
             state_data=user.state_data
         )
 
+        user_data_values = list(user.state_data.values())
         if 'None' in user.state_data.values():
-            text = tmp.instructor_booking_error(lang, user.state_data)
-            return await self.respond(text)
+            none_count = user_data_values.count(None)
+            if len(user_data_values) - none_count == 0:
+                text = tmp.instructor_booking_error(lang, user.state_data)
+                return await self.respond(text)
 
         user.state_data.update({'name': 'None', 'phone_number': 'None', 'place': 'None'})
         self.repo.update_user(self.user_id, state_data=user.state_data, state='hire_instructor_personal_info_request')
 
-        first_text = tmp.tracks_info_text(lang)
-        file_path = utils.get_path_to_asset('tracks.png')
-        await self.respond(first_text, file=file_path)
+        # first_text = tmp.tracks_info_text(lang)
+        # file_path = utils.get_path_to_asset('tracks.png')
+        # await self.respond(first_text, file=file_path)
 
         second_text = tmp.instructor_booking_user_data_request_text(lang)
         return await self.respond(second_text)
@@ -294,9 +301,12 @@ class ConversationService(TGObject):
         phone_number = user.state_data.get('phone_number')
         place = user.state_data.get('place')
 
+        user_data_values = list(user.state_data.values())
         if 'None' in user.state_data.values():
-            text = tmp.instructor_booking_user_data_request_error(user.lead.lang, user.state_data)
-            return await self.respond(text)
+            none_count = user_data_values.count(None)
+            if len(user_data_values) - none_count == 0:
+                text = tmp.instructor_booking_user_data_request_error(user.lead.lang, user.state_data)
+                return await self.respond(text)
 
         first_text = tmp.new_instructor_booking_text(user, dates, time, equipment, participants_count, participants_type, age, name, phone_number, place)
         await stg.bot.send_message(stg.notification_box_chat_id, first_text)
@@ -397,9 +407,12 @@ class ConversationService(TGObject):
             state_data=user.state_data
         )
 
+        user_data_values = list(user.state_data.values())
         if 'None' in user.state_data.values():
-            text = tmp.food_order_delivery_details_request_error(lang, user.state_data)
-            return await self.respond(text)
+            none_count = user_data_values.count(None)
+            if len(user_data_values) - none_count == 0:
+                text = tmp.food_order_delivery_details_request_error(lang, user.state_data)
+                return await self.respond(text)
 
         self.repo.update_user(self.user_id, state='food_order_confirmation_request')
         text = tmp.food_order_delivery_details_confirmation_text(user.lead.lang, user.state_data)
@@ -505,9 +518,8 @@ class ConversationService(TGObject):
         first_text = tmp.massage_booking_text(user, date, time, massage_type, duration)
         await stg.bot.send_message(stg.massage_chat_id, first_text)
 
-        file_path = utils.get_path_to_asset('new_gudauri_map.png')
         second_text = tmp.massage_booking_confirmed_text(lang)
-        await self.respond(second_text, file=file_path)
+        await self.respond(second_text)
 
         return await self.all_services_menu()
 
@@ -567,8 +579,11 @@ class ConversationService(TGObject):
             state_data=user.state_data
         )
 
+        user_data_values = list(user.state_data.values())
         if 'None' in user.state_data.values():
-            return await self.respond(tmp.user_details_collecting_error(lang, user.state_data))
+            none_count = user_data_values.count(None)
+            if len(user_data_values) - none_count == 0:
+                return await self.respond(tmp.user_details_collecting_error(lang, user.state_data))
 
         date = user.state_data.get('date')
         time = user.state_data.get('time')
@@ -670,8 +685,11 @@ class ConversationService(TGObject):
             state_data=user.state_data
         )
 
+        user_data_values = list(user.state_data.values())
         if 'None' in user.state_data.values():
-            return await self.respond(tmp.user_details_collecting_error(lang, user.state_data))
+            none_count = user_data_values.count(None)
+            if len(user_data_values) - none_count == 0:
+                return await self.respond(tmp.user_details_collecting_error(lang, user.state_data))
 
         date = user.state_data.get('date')
         time = user.state_data.get('time')
@@ -845,8 +863,11 @@ class ConversationService(TGObject):
             state_data=user.state_data
         )
 
+        user_data_values = list(user.state_data.values())
         if 'None' in user.state_data.values():
-            return await self.respond(tmp.user_details_collecting_error(lang, user.state_data))
+            none_count = user_data_values.count(None)
+            if len(user_data_values) - none_count == 0:
+                return await self.respond(tmp.user_details_collecting_error(lang, user.state_data))
 
         date = user.state_data.get('date')
         time = user.state_data.get('time')
@@ -949,8 +970,11 @@ class ConversationService(TGObject):
             state_data=user.state_data
         )
 
+        user_data_values = list(user.state_data.values())
         if 'None' in user.state_data.values():
-            return await self.respond(tmp.cleaning_details_collecting_error(lang, user.state_data))
+            none_count = user_data_values.count(None)
+            if len(user_data_values) - none_count == 0:
+                return await self.respond(tmp.cleaning_details_collecting_error(lang, user.state_data))
 
         date = user.state_data.get('date')
 
@@ -1092,8 +1116,11 @@ class ConversationService(TGObject):
             state_data=user.state_data
         )
 
+        user_data_values = list(user.state_data.values())
         if 'None' in user.state_data.values():
-            return await self.respond(tmp.transfer_details_collecting_error(lang, user.state_data))
+            none_count = user_data_values.count(None)
+            if len(user_data_values) - none_count == 0:
+                return await self.respond(tmp.transfer_details_collecting_error(lang, user.state_data))
 
         route_number = user.state_data.get('route_number')
         people_count = user.state_data.get('people_count')
