@@ -1,0 +1,12 @@
+version: "3.9"
+
+services:
+  bot:
+    container_name: service-gudauri-bot
+    build: .
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - ./logs:/home/service-gudauri-bot/logs
+      - ./sessions:/app/sessions
