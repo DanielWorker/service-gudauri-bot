@@ -1,4 +1,6 @@
-version: "3.9"
+networks:
+  main_network:  # объявляем сеть
+    driver: bridge
 
 services:
   bot:
