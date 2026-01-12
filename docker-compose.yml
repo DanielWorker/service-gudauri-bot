@@ -8,5 +8,5 @@ services:
     env_file:
       - .env
     volumes:
-      - ./logs:/home/service-gudauri-bot/logs
+      - ./logs:/home/projects/service-gudauri-bot/logs
       - ./sessions:/app/sessions
