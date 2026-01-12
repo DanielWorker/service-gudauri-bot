@@ -20,7 +20,7 @@ BOT_USERNAME = os.getenv("BOT_USERNAME")
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 APIFY_TOKEN = os.getenv("APIFY_TOKEN")
-TEST_MODE = os.getenv("TEST_MODE")
+TEST_MODE = os.getenv("TEST_MODE", "0")
 
 if int(TEST_MODE):
     log_dir = '/Users/spoonsimons/PycharmProjects/service_gudauri_bot/logs'
@@ -34,9 +34,9 @@ if int(TEST_MODE):
     rent_flat_chat_id = -1001826495601
     transfer_chat_id = -1001826495601
 else:
-    log_dir = '/home/service-gudauri-bot/logs'
-    path_to_sessions = '/home/service-gudauri-bot/sessions/'
-    path_to_assets = '/home/service-gudauri-bot/src/assets/'
+    log_dir = '/home/projects/service-gudauri-bot/logs'
+    path_to_sessions = '/home/projects/service-gudauri-bot/sessions/'
+    path_to_assets = '/home/projects/service-gudauri-bot/src/assets/'
     paragliding_chat_id = -1002352593736
     notification_box_chat_id = -1002416931095
     food_orders_chat_id = -1002253195663
