@@ -35,7 +35,7 @@ if int(TEST_MODE):
     transfer_chat_id = -1001826495601
 else:
     log_dir = '/home/projects/service-gudauri-bot/logs'
-    path_to_sessions = '/home/projects/service-gudauri-bot/sessions/'
+    path_to_sessions = '/app/sessions/'
     path_to_assets = '/home/projects/service-gudauri-bot/src/assets/'
     paragliding_chat_id = -1002352593736
     notification_box_chat_id = -1002416931095
