@@ -10,3 +10,5 @@ services:
     volumes:
       - ./logs:/home/projects/service-gudauri-bot/logs
       - ./sessions:/app/sessions
+    networks:
+      - main_network
