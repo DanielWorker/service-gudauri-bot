@@ -3,11 +3,8 @@ import re
 
 from openai import OpenAI
 
-# import src.settings as stg
-# client = OpenAI(api_key=stg.OPENAI_API_KEY)
-
-OPENAI_API_KEY = "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"
-client = OpenAI(api_key=OPENAI_API_KEY)
+import src.settings as stg
+client = OpenAI(api_key=stg.OPENAI_API_KEY)
 
 
 def detect_input_language(text):
