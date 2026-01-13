@@ -1,6 +1,7 @@
 networks:
-  main_network:  # объявляем сеть
-    driver: bridge
+  main_network:
+    external: true
+    name: main_network  # ← добавь эту строку
 
 services:
   bot:
