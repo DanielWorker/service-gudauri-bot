@@ -104,7 +104,7 @@ class ConversationService(TGObject):
         user = self.repo.find_user(self.user_id)
 
         service_shortcuts = {
-            '1': self.handle_buy_equipment_service,
+            '1': self.handle_sale_equipment_service,
             '2': self.handle_instructor_service,
             '3': self.handle_massage_service,
             '4': self.handle_exchange_service,
@@ -121,7 +121,7 @@ class ConversationService(TGObject):
         service = response["service"]
 
         service_handlers = {
-            'sale_equipment': self.handle_buy_equipment_service,
+            'sale_equipment': self.handle_sale_equipment_service,
             'instructor': self.handle_instructor_service,
             'massage': self.handle_massage_service,
             'exchange': self.handle_exchange_service,
