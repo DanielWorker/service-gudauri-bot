@@ -849,11 +849,10 @@ def massage_service_info_text(lang):
     if lang == "english":
         text = """**💆 Massage**
 
-🕒 9:00 AM - 9:00 PM 🕒  
-Relaxing                     ⏰ 1h — 99₾ / 1.5h — 138₾  
-Classic                        ⏰ 1h — 110₾ / 1.5h — 150₾  
-Sports                         ⏰ 1h — 120₾ / 1.5h — 169₾  
-Therapeutic Session ⏰ 1.5h — 195₾ / 2h — 249₾  
+🕒 5:00 PM - 8:00 PM 🕒  
+Relaxing                     ⏰ 1h — 110₾ / 1.5h — 160₾  
+Classic                        ⏰ 1h — 130₾ / 1.5h — 180₾  
+Sports                         ⏰ 1h — 150₾ / 1.5h — 220₾  
 Balinese                      ⏰ 1h — 120₾ / 1.5h —  169₾  
 Cupping Therapy   ⏰ 1h — 110₾ / 1.5h — 150₾
 Back + legs                  ⏰ 1h — 110₾ / 1.5h — 150₾
@@ -869,7 +868,7 @@ __To return to the menu, type 'menu' / 'cancel' / 'no'__"""
     else:
         text = """**💆Массаж**
 
-🕒 9.00 - 21.00 🕒
+🕒 17.00 - 20.00 🕒
 Расслабляющий    1 час ⏰ 110₾ / 1.5⏰  160₾
 Классический         1 час ⏰ 130₾ / 1.5⏰  180₾
 Спортивный            1 час ⏰ 150₾ / 1.5⏰  220₾
@@ -934,12 +933,12 @@ def massage_booking_confirmed_text(lang):
     if lang == "english":
         return (f"**🎉 Your booking is confirmed!**\n"
                 "**Please pay in cash (₾/$)**"
-                f"Your contact details have been forwarded to the instructor,"
+                f"Your contact details have been forwarded to the operator,"
                 f"who will contact you as soon as they are available.\n")
     else:
         return (f"**🎉 Ваша запись подтверждена!**\n"
-                f"Ваш контакт передан инструктору,\n"
-                f"свяжется с вами, как освободится")
+                f"Ваш контакт передан оператором,\n"
+                f"он свяжется с вами, как освободится")
 
 
 def massage_booking_text(user, date, time, massage_type, duration):
