@@ -505,7 +505,7 @@ class ConversationService(TGObject):
         except ValueError:
             return await self.respond(tmp.booking_error(lang))
 
-        if not (17 <= due_date.hour < 20):
+        if not (17 <= due_date.hour < 21):
             return await self.respond(tmp.invalid_massage_booking_time_error(lang))
 
         utc_dt = utils.convert_time_to_utc(due_date)
